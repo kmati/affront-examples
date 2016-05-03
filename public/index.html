@@ -1,0 +1,22 @@
+<html>
+	<head>
+		<title>affront-examples</title>
+		<script type="text/javascript" src="bundle.js"></script>
+	</head>
+	<body>
+
+	<ul>
+		<li><a class="Link" href="/atom">Atom</a></li>
+		<li><a class="Link" href="/molecule">Molecule</a></li>
+		<li><a class="Link" href="/quark">Quark</a></li>
+	</ul>
+
+	<script type="text/javascript">
+		var elements = document.querySelectorAll('.Link');
+		Array.prototype.forEach.call(elements, function(el, i) {
+			Affront.Router.bindLinkElement(el);
+		});
+	</script>
+
+	</body>
+</html>
