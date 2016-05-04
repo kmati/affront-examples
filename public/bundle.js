@@ -211,7 +211,11 @@
 				var urlParams = this.routeParts.matchUrlAndGetParams(url);
 				if (urlParams) {
 					var ctxt = new _UrlContext.UrlContext(url, urlParams);
-					this.render(ctxt);
+					try {
+						this.render(ctxt);
+					} catch (e) {
+						console.error(e);
+					}
 				}
 			}
 	
