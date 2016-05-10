@@ -1,7 +1,6 @@
 <html>
 	<head>
 		<title>affront-examples</title>
-		<script type="text/javascript" src="bundle.js"></script>
 	</head>
 	<body>
 
@@ -13,38 +12,15 @@
 		<li><a class="Link" href="/quark">Quark</a></li>
 	</ul>
 
+	<div id="divMyView"></div>
+
+	<script type="text/javascript" src="build/bundle.js"></script>
 	<script type="text/javascript">
 		// apply the binding of the click events for the <a> elements
 		var elements = document.querySelectorAll('.Link');
 		Array.prototype.forEach.call(elements, function(el, i) {
 			Affront.Router.bindLinkElement(el);
 		});
-	</script>
-
-	<script type="text/javascript">
-		"use strict";
-		class DumbComponent extends Affront.Component {
-			constructor(routeUrl) {
-				super(routeUrl);
-			}
-		}
-
-		Affront.Router.addComponent(new DumbComponent('/molecule'));
-		
-		// create the components that go with the different routes
-		class AtomComponent extends Affront.Component {
-			constructor(routeUrl) {
-				super(routeUrl);
-			}
-
-			// ctxt: instance of UrlContext
-			render(ctxt) {
-				console.log('[AtomComponent.render] ctxt = ',ctxt);
-			}
-		}
-
-		Affront.Router.addComponent(new AtomComponent('/atom'));
-		Affront.Router.addComponent(new AtomComponent('/atom/:elementSymbol'));
 	</script>
 
 	</body>
