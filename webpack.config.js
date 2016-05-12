@@ -1,12 +1,12 @@
 var webpack = require('webpack');
 var path = require('path');
-//const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
-// const sassLoaders = [
-//   'css-loader',
-//   'postcss-loader',
-//   'sass-loader?indentedSyntax=scss&includePaths[]=' + path.resolve(__dirname, './client')
-// ]
+const sassLoaders = [
+  'css-loader',
+  'postcss-loader',
+  'sass-loader?indentedSyntax=scss&includePaths[]=' + path.resolve(__dirname, './client')
+]
 
 var BUILD_DIR = path.resolve(__dirname, 'public', 'build');
 var APP_DIR = path.resolve(__dirname, 'app');
@@ -27,15 +27,15 @@ var config = {
           presets: ['es2015']
         }
       },
-      // {
-      //   test: /\.scss$/,
-      //   loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
-      // },
+      {
+        test: /\.scss$/,
+        loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
+      },
       { test: /\.css$/, loader: "style-loader!css-loader" }
     ],
-    // plugins: [
-    //   new ExtractTextPlugin('[name].css')
-    // ]
+    plugins: [
+      new ExtractTextPlugin('[name].css')
+    ]
   }
 };
 
