@@ -11,9 +11,10 @@
     "url": "http://www.nocrunchtime.com"
   },
   "dependencies": {
-    "express": "*",
+    "affront": "https://github.com/kmati/affront.git",
     "body-parser": "*",
-    "affront": "https://github.com/kmati/affront.git"
+    "express": "*",
+    "mustache": "^2.2.1"
   },
   "devDependencies": {
     "babel-cli": "^6.8.0",
