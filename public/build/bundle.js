@@ -3381,17 +3381,13 @@
 			var token = new Token(Token[productionName], '', index);
 	
 			while (index < str.length) {
-				ret = ctxt[productionName](str, index);
+				var ret = ctxt[productionName](str, index);
 				if (ret) {
 					token.addChild(ret.token);
 					index = ret.newIndex;
 				} else {
 					break;
 				}
-			}
-	
-			if (token.children.length < 1) {
-				return undefined;
 			}
 	
 			token.value = str.substring(originalIndex, index);
@@ -3458,6 +3454,41 @@
 			var originalIndex = index;
 			var token = new Token(tokenToBeReturned, '', index);
 			var ret = this.repeat1Plus(str, index, productionName, ctxt);
+			if (ret) {
+				index = ret.newIndex;
+				token.addChild(ret.token);
+			}
+	
+			if (token.children.length > 0) {
+				token.value = str.substring(originalIndex, index);
+				return {
+					newIndex: index,
+					token: token
+				};
+			}
+	
+			return undefined;
+		},
+	
+		// Repeats a production in a ()* fashion, i.e. repeat 1 or more times.
+		// This must be used only when the production is of the form:
+		//	A := B*
+		//		i.e. where the only factor of A is B which can repeat 0 or more times.
+		//
+		// str: The string to process
+		// index: The index at which to start the repetitiom
+		// productionName: The name of the production (i.e. B in the example above)
+		// ctxt: The object that contains the production functions
+		// tokenToBeReturned: The name of the token by which the resulting token will be labeled (i.e. A in the example above)
+		// Returns: The { newIndex: number, token: Token } result if there is a match OR undefined
+		onlyRepeat0Plus: function onlyRepeat0Plus(str, index, productionName, ctxt, tokenToBeReturned) {
+			if (index >= str.length) {
+				return undefined;
+			}
+	
+			var originalIndex = index;
+			var token = new Token(tokenToBeReturned, '', index);
+			var ret = this.repeat0Plus(str, index, productionName, ctxt);
 			if (ret) {
 				index = ret.newIndex;
 				token.addChild(ret.token);
@@ -4596,38 +4627,86 @@
 			return parserCommonFunctions.exactlyText(str, index, '"', 'Quote');
 		},
 	
-		// AttributeValue := Quote AttributeValueString Quote
-		AttributeValue: function AttributeValue(str, index) {
-			return parserCommonFunctions.seq(str, index, ['Quote', 'AttributeValueString', 'Quote'], this, 'AttributeValue');
+		// SingleQuote := '\''
+		SingleQuote: function SingleQuote(str, index) {
+			return parserCommonFunctions.exactlyText(str, index, '\'', 'SingleQuote');
 		},
 	
-		// AttributeValueString := AttributeValueStringChar+
-		AttributeValueString: function AttributeValueString(str, index) {
-			return parserCommonFunctions.onlyRepeat1Plus(str, index, 'AttributeValueStringChar', this, 'AttributeValueString');
-		},
-	
-		// AttributeValueStringChar := !Quote & !'\''
-		AttributeValueStringChar: function AttributeValueStringChar(str, index) {
+		// NotSingleQuote := !'\''
+		NotSingleQuote: function NotSingleQuote(str, index) {
 			if (index >= str.length) {
 				return undefined;
 			}
 	
 			var succeeded = true;
-			['"', '\''].forEach(function (ch) {
-				var ret = parserCommonFunctions.checkMatch(str, ch, index);
-				if (ret) {
-					succeeded = false;
-					return;
-				}
-			});
+			var ret = parserCommonFunctions.checkMatch(str, '\'', index);
+			if (ret) {
+				succeeded = false;
+				return;
+			}
 			if (succeeded) {
 				return {
 					newIndex: index + 1,
-					token: new Token(Token.AttributeValueStringChar, str.substr(index, 1), index)
+					token: new Token(Token.NotSingleQuote, str.substr(index, 1), index)
 				};
 			} else {
 				return undefined;
 			}
+		},
+	
+		// NotDoubleQuote := !'"'
+		NotDoubleQuote: function NotDoubleQuote(str, index) {
+			if (index >= str.length) {
+				return undefined;
+			}
+	
+			var succeeded = true;
+			var ret = parserCommonFunctions.checkMatch(str, '"', index);
+			if (ret) {
+				succeeded = false;
+				return;
+			}
+			if (succeeded) {
+				return {
+					newIndex: index + 1,
+					token: new Token(Token.NotDoubleQuote, str.substr(index, 1), index)
+				};
+			} else {
+				return undefined;
+			}
+		},
+	
+		// AttributeValue := AttributeValueSingleQuoteBounded | AttributeValueDoubleQuoteBounded
+		AttributeValue: function AttributeValue(str, index) {
+			return parserCommonFunctions.or(str, index, ['AttributeValueDoubleQuoteBounded', 'AttributeValueSingleQuoteBounded'], this, 'AttributeValue');
+		},
+	
+		// AttributeValueSingleQuoteBounded := SingleQuote AttributeValueStringNoSingleQuote SingleQuote
+		AttributeValueSingleQuoteBounded: function AttributeValueSingleQuoteBounded(str, index) {
+			if (index >= str.length) {
+				return undefined;
+			}
+	
+			return parserCommonFunctions.seq(str, index, ['SingleQuote', 'AttributeValueStringNoSingleQuote', 'SingleQuote'], this, 'AttributeValueSingleQuoteBounded');
+		},
+	
+		// AttributeValueDoubleQuoteBounded := Quote AttributeValueStringNoDoubleQuote Quote
+		AttributeValueDoubleQuoteBounded: function AttributeValueDoubleQuoteBounded(str, index) {
+			if (index >= str.length) {
+				return undefined;
+			}
+	
+			return parserCommonFunctions.seq(str, index, ['Quote', 'AttributeValueStringNoDoubleQuote', 'Quote'], this, 'AttributeValueDoubleQuoteBounded');
+		},
+	
+		// AttributeValueStringNoSingleQuote := NotSingleQuote*
+		AttributeValueStringNoSingleQuote: function AttributeValueStringNoSingleQuote(str, index) {
+			return parserCommonFunctions.onlyRepeat0Plus(str, index, 'NotSingleQuote', this, 'AttributeValueStringNoSingleQuote');
+		},
+	
+		// AttributeValueStringNoDoubleQuote := NotDoubleQuote*
+		AttributeValueStringNoDoubleQuote: function AttributeValueStringNoDoubleQuote(str, index) {
+			return parserCommonFunctions.onlyRepeat0Plus(str, index, 'NotDoubleQuote', this, 'AttributeValueStringNoDoubleQuote');
 		},
 	
 		// Whitespaces := Whitespace+
@@ -4762,7 +4841,7 @@
 	
 			astEmitter.subscribe(['AttributeDeclaration'], function (token) {
 				var attrName = token.children[0].value,
-				    attrValue = token.children[2].children[1].value;
+				    attrValue = token.children[2].children[0].children[1].value;
 	
 				var ele = elements[elements.length - 1];
 				ele.addAttr(new Attr(attrName, attrValue));
