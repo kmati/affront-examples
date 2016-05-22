@@ -51,7 +51,7 @@
 	
 	var _affront = __webpack_require__(/*! affront */ 1);
 	
-	var _lib = __webpack_require__(/*! ../lib */ 41);
+	var _lib = __webpack_require__(/*! ../lib */ 45);
 	
 	// add the components of the app
 	/*
@@ -114,13 +114,13 @@
 	
 	var _Router = __webpack_require__(/*! ./Router */ 3);
 	
-	var _Component = __webpack_require__(/*! ./Component */ 15);
+	var _Component = __webpack_require__(/*! ./Component */ 19);
 	
-	var _Control = __webpack_require__(/*! ./Control */ 17);
+	var _Control = __webpack_require__(/*! ./Control */ 21);
 	
 	var _Store = __webpack_require__(/*! ./Store */ 7);
 	
-	var _Http = __webpack_require__(/*! ./Http */ 40);
+	var _Http = __webpack_require__(/*! ./Http */ 44);
 	
 	var Affront = exports.Affront = {
 		Router: new _Router.Router(),
@@ -335,6 +335,8 @@
 	
 	var _Store = __webpack_require__(/*! ../Store */ 7);
 	
+	var _Events = __webpack_require__(/*! ../Events */ 15);
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var Mode = {
@@ -349,6 +351,7 @@
 			this.routeUrl = routeUrl;
 			this.routeParts = ComponentBase.parseRoute(routeUrl);
 			this.mode = Mode.Hidden;
+			this.lastEvent = null;
 		}
 	
 		_createClass(ComponentBase, [{
@@ -357,6 +360,7 @@
 				var self = this;
 				return _Store.Store.subscribe(key, function (storeItem) {
 					if (self.mode === Mode.Rendered) {
+						self.lastEvent = new _Events.Events.NotificationEvent(storeItem);
 						self.notificationRender(storeItem);
 					}
 				});
@@ -374,6 +378,7 @@
 					var ctxt = new _UrlContext.UrlContext(url, urlParams);
 					try {
 						if (this.mode === Mode.Hidden) {
+							this.lastEvent = new _Events.Events.RouteChangedEvent(ctxt);
 							this.urlChangedRender(ctxt);
 							this.mode = Mode.Rendered;
 						}
@@ -1343,6 +1348,130 @@
 
 /***/ },
 /* 15 */
+/*!***************************************!*\
+  !*** ./~/affront/lib/Events/index.js ***!
+  \***************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.Events = undefined;
+	
+	var _NotificationEvent = __webpack_require__(/*! ./NotificationEvent */ 16);
+	
+	var _RouteChangedEvent = __webpack_require__(/*! ./RouteChangedEvent */ 18);
+	
+	var Events = exports.Events = {
+		NotificationEvent: _NotificationEvent.NotificationEvent,
+		RouteChangedEvent: _RouteChangedEvent.RouteChangedEvent
+	};
+
+/***/ },
+/* 16 */
+/*!***************************************************!*\
+  !*** ./~/affront/lib/Events/NotificationEvent.js ***!
+  \***************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.NotificationEvent = undefined;
+	
+	var _EventBase2 = __webpack_require__(/*! ./EventBase */ 17);
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var NotificationEvent = exports.NotificationEvent = function (_EventBase) {
+		_inherits(NotificationEvent, _EventBase);
+	
+		function NotificationEvent(storeItem) {
+			_classCallCheck(this, NotificationEvent);
+	
+			var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(NotificationEvent).call(this));
+	
+			_this.value = storeItem;
+			return _this;
+		}
+	
+		return NotificationEvent;
+	}(_EventBase2.EventBase);
+	
+	;
+
+/***/ },
+/* 17 */
+/*!*******************************************!*\
+  !*** ./~/affront/lib/Events/EventBase.js ***!
+  \*******************************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var EventBase = exports.EventBase = function EventBase() {
+		_classCallCheck(this, EventBase);
+	
+		this.createdAt = new Date();
+	};
+	
+	;
+
+/***/ },
+/* 18 */
+/*!***************************************************!*\
+  !*** ./~/affront/lib/Events/RouteChangedEvent.js ***!
+  \***************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.RouteChangedEvent = undefined;
+	
+	var _EventBase2 = __webpack_require__(/*! ./EventBase */ 17);
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var RouteChangedEvent = exports.RouteChangedEvent = function (_EventBase) {
+		_inherits(RouteChangedEvent, _EventBase);
+	
+		function RouteChangedEvent(ctxt) {
+			_classCallCheck(this, RouteChangedEvent);
+	
+			var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(RouteChangedEvent).call(this));
+	
+			_this.value = ctxt;
+			return _this;
+		}
+	
+		return RouteChangedEvent;
+	}(_EventBase2.EventBase);
+	
+	;
+
+/***/ },
+/* 19 */
 /*!******************************************!*\
   !*** ./~/affront/lib/Component/index.js ***!
   \******************************************/
@@ -1355,11 +1484,11 @@
 	});
 	exports.Component = undefined;
 	
-	var _ViewComponent = __webpack_require__(/*! ./ViewComponent */ 16);
+	var _ViewComponent = __webpack_require__(/*! ./ViewComponent */ 20);
 	
-	var _TemplateViewComponent = __webpack_require__(/*! ./TemplateViewComponent */ 38);
+	var _TemplateViewComponent = __webpack_require__(/*! ./TemplateViewComponent */ 42);
 	
-	var _NonVisualComponent = __webpack_require__(/*! ./NonVisualComponent */ 39);
+	var _NonVisualComponent = __webpack_require__(/*! ./NonVisualComponent */ 43);
 	
 	var Component = exports.Component = {
 		ViewComponent: _ViewComponent.ViewComponent,
@@ -1368,7 +1497,7 @@
 	};
 
 /***/ },
-/* 16 */
+/* 20 */
 /*!**************************************************!*\
   !*** ./~/affront/lib/Component/ViewComponent.js ***!
   \**************************************************/
@@ -1385,11 +1514,11 @@
 	
 	var _ComponentBase2 = __webpack_require__(/*! ./ComponentBase */ 4);
 	
-	var _Control = __webpack_require__(/*! ../Control */ 17);
+	var _Control = __webpack_require__(/*! ../Control */ 21);
 	
 	var _InvalidArgumentError = __webpack_require__(/*! ../errors/InvalidArgumentError */ 9);
 	
-	__webpack_require__(/*! friedjuju/src/json-to-markup/j2m.js */ 19);
+	__webpack_require__(/*! friedjuju/src/json-to-markup/j2m.js */ 23);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1442,7 +1571,7 @@
 				if (this.controls) {
 					for (var controlId in this.controls) {
 						var control = this.controls[controlId];
-						control.onDOMUpdated(this.domContainerElement);
+						control.onDOMUpdated(this.domContainerElement, this.lastEvent);
 					}
 				}
 			}
@@ -1478,7 +1607,7 @@
 	;
 
 /***/ },
-/* 17 */
+/* 21 */
 /*!****************************************!*\
   !*** ./~/affront/lib/Control/index.js ***!
   \****************************************/
@@ -1497,7 +1626,7 @@
 	
 	var _NotImplementedError = __webpack_require__(/*! ../errors/NotImplementedError */ 6);
 	
-	var _mustache = __webpack_require__(/*! mustache */ 18);
+	var _mustache = __webpack_require__(/*! mustache */ 22);
 	
 	var _mustache2 = _interopRequireDefault(_mustache);
 	
@@ -1558,13 +1687,13 @@
 			}
 		}, {
 			key: 'render',
-			value: function render(data) {
+			value: function render(data, eventObj) {
 				if (this.controls) {
 					var controlData = {};
 					for (var controlId in this.controls) {
 						var control = this.controls[controlId];
 						controlData[control.constructor.name] = {};
-						controlData[control.constructor.name][control.id] = control.render(data);
+						controlData[control.constructor.name][control.id] = control.render(data, eventObj);
 					}
 	
 					for (var key in controlData) {
@@ -1580,14 +1709,25 @@
 	
 		}, {
 			key: 'onDOMUpdated',
-			value: function onDOMUpdated(domContainerElement) {
+			value: function onDOMUpdated(domContainerElement, eventObj) {
+				if (this.onDOMUpdatedNotification) {
+					this.onDOMUpdatedNotification(domContainerElement, eventObj);
+				}
+	
 				if (this.controls) {
 					for (var controlId in this.controls) {
 						var control = this.controls[controlId];
-						control.onDOMUpdated(this.domContainerElement);
+						control.onDOMUpdated(this.domContainerElement, eventObj);
 					}
 				}
 			}
+	
+			// The Control classes that extend this type can add custom logic here to be executed after the domContainerElement
+			// has been updated
+	
+		}, {
+			key: 'onDOMUpdatedNotification',
+			value: function onDOMUpdatedNotification(domContainerElement, eventObj) {}
 		}]);
 	
 		return Control;
@@ -1596,7 +1736,7 @@
 	;
 
 /***/ },
-/* 18 */
+/* 22 */
 /*!********************************!*\
   !*** ./~/mustache/mustache.js ***!
   \********************************/
@@ -2213,7 +2353,7 @@
 	});
 
 /***/ },
-/* 19 */
+/* 23 */
 /*!***********************************************!*\
   !*** ./~/friedjuju/src/json-to-markup/j2m.js ***!
   \***********************************************/
@@ -2234,10 +2374,10 @@
 	 * 6. You can use dot expressions in the property names as a shorthand notation. The elements will be recursively created.
 	 *
 	 */
-	var j2mTransformer = __webpack_require__(/*! ./j2mTransformer.js */ 20),
-	    markupPrinter = __webpack_require__(/*! ./markupPrinter.js */ 33),
-	    domElementConverter = __webpack_require__(/*! ../vdom/domElementConverter.js */ 31),
-	    vdom = __webpack_require__(/*! ../vdom */ 34);
+	var j2mTransformer = __webpack_require__(/*! ./j2mTransformer.js */ 24),
+	    markupPrinter = __webpack_require__(/*! ./markupPrinter.js */ 37),
+	    domElementConverter = __webpack_require__(/*! ../vdom/domElementConverter.js */ 35),
+	    vdom = __webpack_require__(/*! ../vdom */ 38);
 	
 	// We need window for the browser-side so that j2m is declared globally on the browser;
 	// however, since node.js has no window object, we merely create one here so that the
@@ -2311,7 +2451,7 @@
 	}
 
 /***/ },
-/* 20 */
+/* 24 */
 /*!**********************************************************!*\
   !*** ./~/friedjuju/src/json-to-markup/j2mTransformer.js ***!
   \**********************************************************/
@@ -2321,12 +2461,12 @@
 	
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 	
-	__webpack_require__(/*! ./String-Extensions.js */ 21);
-	var Attr = __webpack_require__(/*! ./Attr.js */ 22),
-	    Element = __webpack_require__(/*! ./Element.js */ 23),
-	    objectGraphCreator = __webpack_require__(/*! ./objectGraphCreator */ 24),
-	    domElementConverter = __webpack_require__(/*! ../vdom/domElementConverter.js */ 31),
-	    strippedDownMarkupParser = __webpack_require__(/*! ../vdom/strippedDownMarkupParser.js */ 32);
+	__webpack_require__(/*! ./String-Extensions.js */ 25);
+	var Attr = __webpack_require__(/*! ./Attr.js */ 26),
+	    Element = __webpack_require__(/*! ./Element.js */ 27),
+	    objectGraphCreator = __webpack_require__(/*! ./objectGraphCreator */ 28),
+	    domElementConverter = __webpack_require__(/*! ../vdom/domElementConverter.js */ 35),
+	    strippedDownMarkupParser = __webpack_require__(/*! ../vdom/strippedDownMarkupParser.js */ 36);
 	
 	/* *******************
 	 * j2mTransformer: Used to perform the JSON to markup transformations.
@@ -2502,7 +2642,7 @@
 	}
 
 /***/ },
-/* 21 */
+/* 25 */
 /*!*************************************************************!*\
   !*** ./~/friedjuju/src/json-to-markup/String-Extensions.js ***!
   \*************************************************************/
@@ -2525,7 +2665,7 @@
 	};
 
 /***/ },
-/* 22 */
+/* 26 */
 /*!************************************************!*\
   !*** ./~/friedjuju/src/json-to-markup/Attr.js ***!
   \************************************************/
@@ -2551,7 +2691,7 @@
 	}
 
 /***/ },
-/* 23 */
+/* 27 */
 /*!***************************************************!*\
   !*** ./~/friedjuju/src/json-to-markup/Element.js ***!
   \***************************************************/
@@ -2559,7 +2699,7 @@
 
 	'use strict';
 	
-	var Attr = __webpack_require__(/*! ./Attr.js */ 22);
+	var Attr = __webpack_require__(/*! ./Attr.js */ 26);
 	
 	/* *******************
 	 * Element
@@ -2755,7 +2895,7 @@
 	}
 
 /***/ },
-/* 24 */
+/* 28 */
 /*!**************************************************************!*\
   !*** ./~/friedjuju/src/json-to-markup/objectGraphCreator.js ***!
   \**************************************************************/
@@ -2766,8 +2906,8 @@
 	/*
 	 * This module performs object creation based on a dot expression (Usage 1)
 	 */
-	var ep = __webpack_require__(/*! ../expression-parser/ep.js */ 25);
-	var astEmitter = __webpack_require__(/*! ../expression-parser/astEmitter.js */ 30);
+	var ep = __webpack_require__(/*! ../expression-parser/ep.js */ 29);
+	var astEmitter = __webpack_require__(/*! ../expression-parser/astEmitter.js */ 34);
 	
 	var objectGraphCreatorImpl = {
 		// Creates contained objects within an object based on an expression (that conforms to the Usage 1 grammar)
@@ -2940,7 +3080,7 @@
 	}
 
 /***/ },
-/* 25 */
+/* 29 */
 /*!*************************************************!*\
   !*** ./~/friedjuju/src/expression-parser/ep.js ***!
   \*************************************************/
@@ -2951,9 +3091,9 @@
 	/*
 	 * This module is the parser for the dot expressions used in the j2m system.
 	 */
-	var Token = __webpack_require__(/*! ./Token.js */ 26),
-	    parserUtilsRestricted = __webpack_require__(/*! ./parserUtilsRestricted.js */ 27),
-	    parserUtilsExtended = __webpack_require__(/*! ./parserUtilsExtended.js */ 29);
+	var Token = __webpack_require__(/*! ./Token.js */ 30),
+	    parserUtilsRestricted = __webpack_require__(/*! ./parserUtilsRestricted.js */ 31),
+	    parserUtilsExtended = __webpack_require__(/*! ./parserUtilsExtended.js */ 33);
 	
 	// this is here to add the declarations of static token enums:
 	// e.g. Token.Dot
@@ -3028,7 +3168,7 @@
 	}
 
 /***/ },
-/* 26 */
+/* 30 */
 /*!****************************************************!*\
   !*** ./~/friedjuju/src/expression-parser/Token.js ***!
   \****************************************************/
@@ -3082,7 +3222,7 @@
 	}
 
 /***/ },
-/* 27 */
+/* 31 */
 /*!********************************************************************!*\
   !*** ./~/friedjuju/src/expression-parser/parserUtilsRestricted.js ***!
   \********************************************************************/
@@ -3090,8 +3230,8 @@
 
 	'use strict';
 	
-	var Token = __webpack_require__(/*! ./Token.js */ 26),
-	    parserCommonFunctions = __webpack_require__(/*! ./parserCommonFunctions.js */ 28);
+	var Token = __webpack_require__(/*! ./Token.js */ 30),
+	    parserCommonFunctions = __webpack_require__(/*! ./parserCommonFunctions.js */ 32);
 	
 	/* *******************
 	 * parserUtilsRestricted: The production implementations for the restricted grammar for Usage 1
@@ -3310,7 +3450,7 @@
 	}
 
 /***/ },
-/* 28 */
+/* 32 */
 /*!********************************************************************!*\
   !*** ./~/friedjuju/src/expression-parser/parserCommonFunctions.js ***!
   \********************************************************************/
@@ -3318,7 +3458,7 @@
 
 	'use strict';
 	
-	var Token = __webpack_require__(/*! ./Token.js */ 26);
+	var Token = __webpack_require__(/*! ./Token.js */ 30);
 	
 	/* *******************
 	 * parserCommonFunctions: The common functions used by all parsers
@@ -3619,7 +3759,7 @@
 	}
 
 /***/ },
-/* 29 */
+/* 33 */
 /*!******************************************************************!*\
   !*** ./~/friedjuju/src/expression-parser/parserUtilsExtended.js ***!
   \******************************************************************/
@@ -3627,9 +3767,9 @@
 
 	'use strict';
 	
-	var Token = __webpack_require__(/*! ./Token.js */ 26),
-	    parserCommonFunctions = __webpack_require__(/*! ./parserCommonFunctions.js */ 28),
-	    parserUtilsRestricted = __webpack_require__(/*! ./parserUtilsRestricted.js */ 27);
+	var Token = __webpack_require__(/*! ./Token.js */ 30),
+	    parserCommonFunctions = __webpack_require__(/*! ./parserCommonFunctions.js */ 32),
+	    parserUtilsRestricted = __webpack_require__(/*! ./parserUtilsRestricted.js */ 31);
 	
 	/* *******************
 	 * parserUtilsExtended: The production implementations for the extended grammar for Usages 2 and 3
@@ -4139,7 +4279,7 @@
 	}
 
 /***/ },
-/* 30 */
+/* 34 */
 /*!*********************************************************!*\
   !*** ./~/friedjuju/src/expression-parser/astEmitter.js ***!
   \*********************************************************/
@@ -4224,7 +4364,7 @@
 	}
 
 /***/ },
-/* 31 */
+/* 35 */
 /*!*****************************************************!*\
   !*** ./~/friedjuju/src/vdom/domElementConverter.js ***!
   \*****************************************************/
@@ -4324,7 +4464,7 @@
 	}
 
 /***/ },
-/* 32 */
+/* 36 */
 /*!**********************************************************!*\
   !*** ./~/friedjuju/src/vdom/strippedDownMarkupParser.js ***!
   \**********************************************************/
@@ -4335,11 +4475,11 @@
 	/*
 	 * Simple stripped-down markup parser which uses the "Simple stripped-down markup grammar"
 	 */
-	var astEmitter = __webpack_require__(/*! ../expression-parser/astEmitter.js */ 30),
-	    Token = __webpack_require__(/*! ../expression-parser/Token.js */ 26),
-	    parserCommonFunctions = __webpack_require__(/*! ../expression-parser/parserCommonFunctions.js */ 28),
-	    Attr = __webpack_require__(/*! ../json-to-markup/Attr.js */ 22),
-	    Element = __webpack_require__(/*! ../json-to-markup/Element.js */ 23);
+	var astEmitter = __webpack_require__(/*! ../expression-parser/astEmitter.js */ 34),
+	    Token = __webpack_require__(/*! ../expression-parser/Token.js */ 30),
+	    parserCommonFunctions = __webpack_require__(/*! ../expression-parser/parserCommonFunctions.js */ 32),
+	    Attr = __webpack_require__(/*! ../json-to-markup/Attr.js */ 26),
+	    Element = __webpack_require__(/*! ../json-to-markup/Element.js */ 27);
 	
 	var strippedDownMarkupParserImpl = {
 		// Element := Whitespaces? OpenTagStart AttributeDeclarations? ( (OpenTagStop Children? CloseTag) | ShortCloseTag ) Whitespaces?
@@ -4886,7 +5026,7 @@
 	}
 
 /***/ },
-/* 33 */
+/* 37 */
 /*!*********************************************************!*\
   !*** ./~/friedjuju/src/json-to-markup/markupPrinter.js ***!
   \*********************************************************/
@@ -4913,7 +5053,7 @@
 	}
 
 /***/ },
-/* 34 */
+/* 38 */
 /*!***************************************!*\
   !*** ./~/friedjuju/src/vdom/index.js ***!
   \***************************************/
@@ -4924,10 +5064,10 @@
 	/*
 	 * This is the virtual DOM module
 	 */
-	var treeDiff = __webpack_require__(/*! ./treeDiff.js */ 35),
-	    domWriter = __webpack_require__(/*! ./domWriter.js */ 36),
-	    j2mTransformer = __webpack_require__(/*! ../json-to-markup/j2mTransformer.js */ 20),
-	    strippedDownMarkupParser = __webpack_require__(/*! ./strippedDownMarkupParser.js */ 32);
+	var treeDiff = __webpack_require__(/*! ./treeDiff.js */ 39),
+	    domWriter = __webpack_require__(/*! ./domWriter.js */ 40),
+	    j2mTransformer = __webpack_require__(/*! ../json-to-markup/j2mTransformer.js */ 24),
+	    strippedDownMarkupParser = __webpack_require__(/*! ./strippedDownMarkupParser.js */ 36);
 	
 	function updateDOMImpl(oldRootEle, newRootEle, domElement) {
 		var diffs = treeDiff.diff(oldRootEle, newRootEle);
@@ -4956,7 +5096,7 @@
 	}
 
 /***/ },
-/* 35 */
+/* 39 */
 /*!******************************************!*\
   !*** ./~/friedjuju/src/vdom/treeDiff.js ***!
   \******************************************/
@@ -4969,7 +5109,7 @@
 	 * This is a work in progress on the way to implementing virtual dom functionality.
 	 */
 	
-	var Element = __webpack_require__(/*! ../json-to-markup/Element */ 23);
+	var Element = __webpack_require__(/*! ../json-to-markup/Element */ 27);
 	
 	/* *******************
 	 * DiffItem
@@ -5178,7 +5318,7 @@
 	}
 
 /***/ },
-/* 36 */
+/* 40 */
 /*!*******************************************!*\
   !*** ./~/friedjuju/src/vdom/domWriter.js ***!
   \*******************************************/
@@ -5191,7 +5331,7 @@
 	 */
 	
 	//#DONT_BUILD_BEGIN
-	__webpack_require__(/*! ./document-shim.js */ 37);
+	__webpack_require__(/*! ./document-shim.js */ 41);
 	//#DONT_BUILD_END
 	
 	// Populates a DOM element hierarchy with the contents in an element tree
@@ -5382,7 +5522,7 @@
 	}
 
 /***/ },
-/* 37 */
+/* 41 */
 /*!***********************************************!*\
   !*** ./~/friedjuju/src/vdom/document-shim.js ***!
   \***********************************************/
@@ -5445,7 +5585,7 @@
 			//    they are needed for the node.js implementation.
 	
 	
-			strippedDownMarkupParser = __webpack_require__(/*! ./strippedDownMarkupParser.js */ 32);
+			strippedDownMarkupParser = __webpack_require__(/*! ./strippedDownMarkupParser.js */ 36);
 			global.document = {
 				// Implementation of the document.createElement API
 				// Creates a DOM element
@@ -5591,7 +5731,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 38 */
+/* 42 */
 /*!**********************************************************!*\
   !*** ./~/affront/lib/Component/TemplateViewComponent.js ***!
   \**********************************************************/
@@ -5606,11 +5746,11 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _ViewComponent2 = __webpack_require__(/*! ./ViewComponent */ 16);
+	var _ViewComponent2 = __webpack_require__(/*! ./ViewComponent */ 20);
 	
 	var _InvalidArgumentError = __webpack_require__(/*! ../errors/InvalidArgumentError */ 9);
 	
-	var _mustache = __webpack_require__(/*! mustache */ 18);
+	var _mustache = __webpack_require__(/*! mustache */ 22);
 	
 	var _mustache2 = _interopRequireDefault(_mustache);
 	
@@ -5676,20 +5816,26 @@
 					throw new _InvalidArgumentError.InvalidArgumentError('No template was found with the name: "' + name + '"');
 				}
 	
+				// we clone the data to prevent pollution of the store item!!!
+				var clonedData = {};
+				for (var key in data) {
+					clonedData[key] = data[key];
+				}
+	
 				if (this.controls) {
 					var controlData = {};
 					for (var controlId in this.controls) {
 						var control = this.controls[controlId];
 						controlData[control.constructor.name] = {};
-						controlData[control.constructor.name][control.id] = control.render(data);
+						controlData[control.constructor.name][control.id] = control.render(clonedData, this.lastEvent);
 					}
 	
-					for (var key in controlData) {
-						data[key] = controlData[key];
+					for (var _key in controlData) {
+						clonedData[_key] = controlData[_key];
 					}
 				}
 	
-				return _mustache2.default.render(templateStr, data);
+				return _mustache2.default.render(templateStr, clonedData);
 			}
 		}]);
 	
@@ -5699,7 +5845,7 @@
 	;
 
 /***/ },
-/* 39 */
+/* 43 */
 /*!*******************************************************!*\
   !*** ./~/affront/lib/Component/NonVisualComponent.js ***!
   \*******************************************************/
@@ -5765,7 +5911,7 @@
 	;
 
 /***/ },
-/* 40 */
+/* 44 */
 /*!*************************************!*\
   !*** ./~/affront/lib/Http/index.js ***!
   \*************************************/
@@ -5918,7 +6064,7 @@
 	};
 
 /***/ },
-/* 41 */
+/* 45 */
 /*!**********************!*\
   !*** ./lib/index.js ***!
   \**********************/
@@ -5931,15 +6077,15 @@
 	});
 	exports.ComplexTemplateViewComponent = exports.MyTemplateViewComponent = exports.MyViewComponent = exports.DumbComponent = exports.AtomComponent = undefined;
 	
-	var _AtomComponent = __webpack_require__(/*! ./components/AtomComponent */ 42);
+	var _AtomComponent = __webpack_require__(/*! ./components/AtomComponent */ 46);
 	
-	var _DumbComponent = __webpack_require__(/*! ./components/DumbComponent */ 43);
+	var _DumbComponent = __webpack_require__(/*! ./components/DumbComponent */ 47);
 	
-	var _MyViewComponent = __webpack_require__(/*! ./components/MyViewComponent */ 44);
+	var _MyViewComponent = __webpack_require__(/*! ./components/MyViewComponent */ 48);
 	
-	var _MyTemplateViewComponent = __webpack_require__(/*! ./components/MyTemplateViewComponent */ 49);
+	var _MyTemplateViewComponent = __webpack_require__(/*! ./components/MyTemplateViewComponent */ 53);
 	
-	var _ComplexTemplateViewComponent = __webpack_require__(/*! ./components/ComplexTemplateViewComponent */ 54);
+	var _ComplexTemplateViewComponent = __webpack_require__(/*! ./components/ComplexTemplateViewComponent */ 58);
 	
 	exports.AtomComponent = _AtomComponent.AtomComponent;
 	exports.DumbComponent = _DumbComponent.DumbComponent;
@@ -5948,7 +6094,7 @@
 	exports.ComplexTemplateViewComponent = _ComplexTemplateViewComponent.ComplexTemplateViewComponent;
 
 /***/ },
-/* 42 */
+/* 46 */
 /*!***********************************************!*\
   !*** ./lib/components/AtomComponent/index.js ***!
   \***********************************************/
@@ -6014,7 +6160,7 @@
 	;
 
 /***/ },
-/* 43 */
+/* 47 */
 /*!***********************************************!*\
   !*** ./lib/components/DumbComponent/index.js ***!
   \***********************************************/
@@ -6078,7 +6224,7 @@
 	;
 
 /***/ },
-/* 44 */
+/* 48 */
 /*!*************************************************!*\
   !*** ./lib/components/MyViewComponent/index.js ***!
   \*************************************************/
@@ -6101,7 +6247,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	__webpack_require__(/*! ./styles.css */ 45);
+	__webpack_require__(/*! ./styles.css */ 49);
 	
 	// A visual component
 	
@@ -6157,7 +6303,7 @@
 	;
 
 /***/ },
-/* 45 */
+/* 49 */
 /*!***************************************************!*\
   !*** ./lib/components/MyViewComponent/styles.css ***!
   \***************************************************/
@@ -6166,10 +6312,10 @@
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 46);
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 50);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 48)(content, {});
+	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 52)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6186,13 +6332,13 @@
 	}
 
 /***/ },
-/* 46 */
+/* 50 */
 /*!******************************************************************!*\
   !*** ./~/css-loader!./lib/components/MyViewComponent/styles.css ***!
   \******************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 47)();
+	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 51)();
 	// imports
 	
 	
@@ -6203,7 +6349,7 @@
 
 
 /***/ },
-/* 47 */
+/* 51 */
 /*!**************************************!*\
   !*** ./~/css-loader/lib/css-base.js ***!
   \**************************************/
@@ -6261,7 +6407,7 @@
 	};
 
 /***/ },
-/* 48 */
+/* 52 */
 /*!*************************************!*\
   !*** ./~/style-loader/addStyles.js ***!
   \*************************************/
@@ -6516,7 +6662,7 @@
 
 
 /***/ },
-/* 49 */
+/* 53 */
 /*!*********************************************************!*\
   !*** ./lib/components/MyTemplateViewComponent/index.js ***!
   \*********************************************************/
@@ -6533,7 +6679,7 @@
 	
 	var _affront = __webpack_require__(/*! affront */ 1);
 	
-	var _styles = __webpack_require__(/*! ./styles.css */ 50);
+	var _styles = __webpack_require__(/*! ./styles.css */ 54);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -6554,8 +6700,8 @@
 			_classCallCheck(this, MyTemplateViewComponent);
 	
 			var templates = {
-				'placeholder': __webpack_require__(/*! raw!./placeholder-template.html */ 52),
-				'view': __webpack_require__(/*! raw!./view-template.html */ 53)
+				'placeholder': __webpack_require__(/*! raw!./placeholder-template.html */ 56),
+				'view': __webpack_require__(/*! raw!./view-template.html */ 57)
 			};
 	
 			var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MyTemplateViewComponent).call(this, routeUrl, domElement, templates, _styles2.default));
@@ -6599,7 +6745,7 @@
 	;
 
 /***/ },
-/* 50 */
+/* 54 */
 /*!***********************************************************!*\
   !*** ./lib/components/MyTemplateViewComponent/styles.css ***!
   \***********************************************************/
@@ -6608,10 +6754,10 @@
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 51);
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 55);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 48)(content, {});
+	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 52)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6628,13 +6774,13 @@
 	}
 
 /***/ },
-/* 51 */
+/* 55 */
 /*!**************************************************************************!*\
   !*** ./~/css-loader!./lib/components/MyTemplateViewComponent/styles.css ***!
   \**************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 47)();
+	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 51)();
 	// imports
 	
 	
@@ -6647,7 +6793,7 @@
 	};
 
 /***/ },
-/* 52 */
+/* 56 */
 /*!*****************************************************************************************!*\
   !*** ./~/raw-loader!./lib/components/MyTemplateViewComponent/placeholder-template.html ***!
   \*****************************************************************************************/
@@ -6656,7 +6802,7 @@
 	module.exports = "<div class=\"segment\">Loading...</div>"
 
 /***/ },
-/* 53 */
+/* 57 */
 /*!**********************************************************************************!*\
   !*** ./~/raw-loader!./lib/components/MyTemplateViewComponent/view-template.html ***!
   \**********************************************************************************/
@@ -6665,7 +6811,7 @@
 	module.exports = "<div class=\"segment\">This is my real info | name = {{name}}</div>"
 
 /***/ },
-/* 54 */
+/* 58 */
 /*!**************************************************************!*\
   !*** ./lib/components/ComplexTemplateViewComponent/index.js ***!
   \**************************************************************/
@@ -6682,11 +6828,11 @@
 	
 	var _affront = __webpack_require__(/*! affront */ 1);
 	
-	var _styles = __webpack_require__(/*! ./styles.css */ 55);
+	var _styles = __webpack_require__(/*! ./styles.css */ 59);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _AddressControl = __webpack_require__(/*! ./controls/AddressControl */ 57);
+	var _AddressControl = __webpack_require__(/*! ./controls/AddressControl */ 61);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -6705,8 +6851,8 @@
 			_classCallCheck(this, ComplexTemplateViewComponent);
 	
 			var templates = {
-				'placeholder': __webpack_require__(/*! raw!./placeholder-template.html */ 61),
-				'view': __webpack_require__(/*! raw!./view-template.html */ 62)
+				'placeholder': __webpack_require__(/*! raw!./placeholder-template.html */ 65),
+				'view': __webpack_require__(/*! raw!./view-template.html */ 66)
 			};
 	
 			var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ComplexTemplateViewComponent).call(this, routeUrl, domElement, templates, _styles2.default));
@@ -6753,7 +6899,7 @@
 	;
 
 /***/ },
-/* 55 */
+/* 59 */
 /*!****************************************************************!*\
   !*** ./lib/components/ComplexTemplateViewComponent/styles.css ***!
   \****************************************************************/
@@ -6762,10 +6908,10 @@
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 56);
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 60);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 48)(content, {});
+	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 52)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6782,13 +6928,13 @@
 	}
 
 /***/ },
-/* 56 */
+/* 60 */
 /*!*******************************************************************************!*\
   !*** ./~/css-loader!./lib/components/ComplexTemplateViewComponent/styles.css ***!
   \*******************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 47)();
+	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 51)();
 	// imports
 	
 	
@@ -6801,7 +6947,7 @@
 	};
 
 /***/ },
-/* 57 */
+/* 61 */
 /*!**************************************************************************************!*\
   !*** ./lib/components/ComplexTemplateViewComponent/controls/AddressControl/index.js ***!
   \**************************************************************************************/
@@ -6814,9 +6960,11 @@
 	});
 	exports.AddressControl = undefined;
 	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
 	var _affront = __webpack_require__(/*! affront */ 1);
 	
-	var _styles = __webpack_require__(/*! ./styles.css */ 58);
+	var _styles = __webpack_require__(/*! ./styles.css */ 62);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -6834,9 +6982,17 @@
 		function AddressControl(id) {
 			_classCallCheck(this, AddressControl);
 	
-			var template = __webpack_require__(/*! raw!./view-template.html */ 60);
+			var template = __webpack_require__(/*! raw!./view-template.html */ 64);
 			return _possibleConstructorReturn(this, Object.getPrototypeOf(AddressControl).call(this, id, template, _styles2.default));
 		}
+	
+		_createClass(AddressControl, [{
+			key: 'onDOMUpdatedNotification',
+			value: function onDOMUpdatedNotification(domContainerElement, eventObj) {
+				console.log('[AddressControl] The DOM has been updated | domContainerElement.innerHTML = ', domContainerElement.innerHTML);
+				console.log('[AddressControl] eventObj = ', eventObj);
+			}
+		}]);
 	
 		return AddressControl;
 	}(_affront.Affront.Control);
@@ -6844,7 +7000,7 @@
 	;
 
 /***/ },
-/* 58 */
+/* 62 */
 /*!****************************************************************************************!*\
   !*** ./lib/components/ComplexTemplateViewComponent/controls/AddressControl/styles.css ***!
   \****************************************************************************************/
@@ -6853,10 +7009,10 @@
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../../../~/css-loader!./styles.css */ 59);
+	var content = __webpack_require__(/*! !./../../../../../~/css-loader!./styles.css */ 63);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(/*! ./../../../../../~/style-loader/addStyles.js */ 48)(content, {});
+	var update = __webpack_require__(/*! ./../../../../../~/style-loader/addStyles.js */ 52)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6873,13 +7029,13 @@
 	}
 
 /***/ },
-/* 59 */
+/* 63 */
 /*!*******************************************************************************************************!*\
   !*** ./~/css-loader!./lib/components/ComplexTemplateViewComponent/controls/AddressControl/styles.css ***!
   \*******************************************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(/*! ./../../../../../~/css-loader/lib/css-base.js */ 47)();
+	exports = module.exports = __webpack_require__(/*! ./../../../../../~/css-loader/lib/css-base.js */ 51)();
 	// imports
 	
 	
@@ -6892,7 +7048,7 @@
 	};
 
 /***/ },
-/* 60 */
+/* 64 */
 /*!***************************************************************************************************************!*\
   !*** ./~/raw-loader!./lib/components/ComplexTemplateViewComponent/controls/AddressControl/view-template.html ***!
   \***************************************************************************************************************/
@@ -6901,7 +7057,7 @@
 	module.exports = "<div class=\"segment\">\n\t<table>\n\t\t<tr>\n\t\t\t<td>Street:</td>\n\t\t\t<td>{{street1}}</td>\n\t\t\t<td>Apt:</td>\n\t\t\t<td>{{street2}}</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>City:</td>\n\t\t\t<td>{{city}}</td>\n\t\t\t<td>State:</td>\n\t\t\t<td>{{state}}</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>Zip:</td>\n\t\t\t<td>{{zip}}</td>\n\t\t\t<td>Country:</td>\n\t\t\t<td>{{country}}</td>\n\t\t</tr>\n\t</table>\n</div>"
 
 /***/ },
-/* 61 */
+/* 65 */
 /*!**********************************************************************************************!*\
   !*** ./~/raw-loader!./lib/components/ComplexTemplateViewComponent/placeholder-template.html ***!
   \**********************************************************************************************/
@@ -6910,7 +7066,7 @@
 	module.exports = "<div class=\"segment\">Loading...</div>"
 
 /***/ },
-/* 62 */
+/* 66 */
 /*!***************************************************************************************!*\
   !*** ./~/raw-loader!./lib/components/ComplexTemplateViewComponent/view-template.html ***!
   \***************************************************************************************/
