@@ -5431,7 +5431,7 @@
 				}
 			});
 	
-			if (lastParent) {
+			if (lastParent && lastEle) {
 				lastParent.removeChild(lastEle);
 			}
 		}
@@ -5931,6 +5931,8 @@
 	
 	var _Store = __webpack_require__(/*! ../Store */ 7);
 	
+	var _InvalidArgumentError = __webpack_require__(/*! ../errors/InvalidArgumentError */ 9);
+	
 	// callback: function (err, response)
 	//	where response is an object if JSON.parseable or is the responseText
 	function request(method, url, data, callback) {
@@ -5968,14 +5970,41 @@
 		}
 	}
 	
+	// the default base uri
+	var _baseUri = '';
+	
+	// apply the base uri for relative urls
+	// url: An url
+	// Returns: The resolved url if the original url is relative;
+	//	if the original url is absolute then it is returned as is
+	function applyBaseUri(url) {
+		if (val.substr(0, 7).toLowerCase() === 'http://' || val.substr(0, 8).toLowerCase() === 'https://') {
+			// since url is absolute we do NOT apply the base uri!
+			return url;
+		}
+		return _baseUri + url;
+	}
+	
 	var Http = exports.Http = {
+		// Gets the base uri
+		get BaseUri() {
+			return _baseUri;
+		},
+	
+		// Sets the base uri
+		set BaseUri(val) {
+			if (typeof val !== 'string') {
+				throw new _InvalidArgumentError.InvalidArgumentError('Cannot set the BaseUri because the value passed in is not a string');
+			}
+			_baseUri = val;
+		},
+	
 		// key: The key of the store item to set with the response data
 		// 	If key is set then the matching store item will be set
 		// url: The url
 		// callback: void function (err, responseData)
-	
 		get: function get(key, url, callback) {
-			request('GET', url, null, function (err, value) {
+			request('GET', applyBaseUri(url), null, function (err, value) {
 				if (err) {
 					callback(err);
 					return;
@@ -5994,7 +6023,7 @@
 		// data: The data to post
 		// callback: void function (err, responseData)
 		post: function post(key, url, data, callback) {
-			request('POST', url, data, function (err, value) {
+			request('POST', applyBaseUri(url), data, function (err, value) {
 				if (err) {
 					callback(err);
 					return;
@@ -6013,7 +6042,7 @@
 		// data: The data to put
 		// callback: void function (err, responseData)
 		put: function put(key, url, data, callback) {
-			request('PUT', url, data, function (err, value) {
+			request('PUT', applyBaseUri(url), data, function (err, value) {
 				if (err) {
 					callback(err);
 					return;
@@ -6031,7 +6060,7 @@
 		// url: The url
 		// callback: void function (err, responseData)
 		delete: function _delete(key, url, callback) {
-			request('DELETE', url, null, function (err, value) {
+			request('DELETE', applyBaseUri(url), null, function (err, value) {
 				if (err) {
 					callback(err);
 					return;
@@ -6050,7 +6079,7 @@
 		// data: The data to patch
 		// callback: void function (err, responseData)
 		patch: function patch(key, url, data, callback) {
-			request('PATCH', url, data, function (err, value) {
+			request('PATCH', applyBaseUri(url), data, function (err, value) {
 				if (err) {
 					callback(err);
 					return;

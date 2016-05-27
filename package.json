@@ -1,6 +1,6 @@
 {
   "name": "affront-examples",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "repository": "https://github.com/kmati/affront-examples",
   "license": "MIT",
   "description": "Examples of how to use affront.js",
@@ -11,7 +11,7 @@
     "url": "http://www.nocrunchtime.com"
   },
   "dependencies": {
-    "affront": "https://github.com/kmati/affront.git",
+    "affront": "^0.2.2",
     "body-parser": "*",
     "express": "*",
     "raw-loader": "^0.5.1"
