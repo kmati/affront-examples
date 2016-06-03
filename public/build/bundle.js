@@ -261,12 +261,12 @@
 							// no forward version found which means that this is a new route so set the new route!
 							_Store.Store.setItemAtNextVersion('Router', newState);
 						}
-						_Store.Store.sendNotificationsForCurrentVersion();
+						_Store.Store.sendNotificationsForCurrentVersion({ isRouting: true });
 					}
 				} else {
 					// going to a new url
 					_Store.Store.setItemAtNextVersion('Router', newState);
-					_Store.Store.sendNotificationsForCurrentVersion();
+					_Store.Store.sendNotificationsForCurrentVersion({ isRouting: true });
 				}
 			}
 		}, {
@@ -358,10 +358,10 @@
 			key: 'subscribe',
 			value: function subscribe(key) {
 				var self = this;
-				return _Store.Store.subscribe(key, function (storeItem) {
+				return _Store.Store.subscribe(key, function (storeItem, notificationOptions) {
 					if (self.mode === Mode.Rendered) {
 						self.lastEvent = new _Events.Events.NotificationEvent(storeItem);
-						self.notificationRender(storeItem);
+						self.notificationRender(storeItem, notificationOptions);
 					}
 				});
 			}
@@ -402,11 +402,13 @@
 			}
 	
 			// This method is invoked so the component can render the actual data (storeItem)
-			// ctxt: a StoreItem instance
+			// storeItem: a StoreItem instance
+			// notificationOptions: An object with options in the properties:
+			//	e.g. { isRouting: true }
 	
 		}, {
 			key: 'notificationRender',
-			value: function notificationRender(storeItem) {
+			value: function notificationRender(storeItem, notificationOptions) {
 				throw new _NotImplementedError.NotImplementedError('notificationRender method not yet implemented');
 			}
 		}, {
@@ -687,7 +689,7 @@
 					for (var _iterator = currentVersion.data.valueSeq()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 						var storeItem = _step.value;
 	
-						this.subscriptionManager.notify(storeItem);
+						this.subscriptionManager.notify(storeItem, {});
 					}
 				} catch (err) {
 					_didIteratorError = true;
@@ -708,10 +710,12 @@
 			}
 	
 			// Sends out the notifications for all the store items for the current (i.e. latest) version
+			// notificationOptions: An object with options in the properties:
+			//	e.g. { isRouting: true }
 	
 		}, {
 			key: 'sendNotificationsForCurrentVersion',
-			value: function sendNotificationsForCurrentVersion() {
+			value: function sendNotificationsForCurrentVersion(notificationOptions) {
 				var currentVersion = this.versions.last();
 	
 				// now send the notifications for all the store items in the version
@@ -723,7 +727,7 @@
 					for (var _iterator2 = currentVersion.data.valueSeq()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
 						var storeItem = _step2.value;
 	
-						this.subscriptionManager.notify(storeItem);
+						this.subscriptionManager.notify(storeItem, notificationOptions);
 					}
 				} catch (err) {
 					_didIteratorError2 = true;
@@ -764,7 +768,7 @@
 	
 				var item = new _StoreItem.StoreItem(key, value);
 				currentVersion.data = currentVersion.data.set(key, item);
-				this.subscriptionManager.notify(item);
+				this.subscriptionManager.notify(item, {});
 	
 				this.router.onSetItem(item);
 				return item;
@@ -794,7 +798,7 @@
 	
 				var item = new _StoreItem.StoreItem(key, value);
 				currentVersion.data = currentVersion.data.set(key, item);
-				this.subscriptionManager.notify(item);
+				this.subscriptionManager.notify(item, {});
 	
 				this.router.onSetItem(item);
 				return item;
@@ -1191,14 +1195,16 @@
 			}
 	
 			// Calls the method or function with the store item
+			// notificationOptions: An object with options in the properties:
+			//	e.g. { isRouting: true }
 	
 		}, {
 			key: "notify",
-			value: function notify(storeItem) {
+			value: function notify(storeItem, notificationOptions) {
 				if (this.context) {
-					this.fn.call(this.context, storeItem);
+					this.fn.call(this.context, storeItem, notificationOptions);
 				} else {
-					this.fn(storeItem);
+					this.fn(storeItem, notificationOptions);
 				}
 			}
 		}]);
@@ -1253,11 +1259,15 @@
 				subscriber.subscription = null;
 				return subscriber;
 			}
+	
+			// notificationOptions: An object with options in the properties:
+			//	e.g. { isRouting: true }
+	
 		}, {
 			key: "notify",
-			value: function notify(storeItem) {
+			value: function notify(storeItem, notificationOptions) {
 				this.subscribers.forEach(function (s) {
-					return s.notify(storeItem);
+					return s.notify(storeItem, notificationOptions);
 				});
 			}
 		}]);
@@ -1307,12 +1317,16 @@
 				}
 				return subscription;
 			}
+	
+			// notificationOptions: An object with options in the properties:
+			//	e.g. { isRouting: true }
+	
 		}, {
 			key: 'notify',
-			value: function notify(storeItem) {
+			value: function notify(storeItem, notificationOptions) {
 				var subscription = this.subscriptions[storeItem.key];
 				if (subscription) {
-					subscription.notify(storeItem);
+					subscription.notify(storeItem, notificationOptions);
 				}
 			}
 		}]);
@@ -1587,11 +1601,13 @@
 			}
 	
 			// This method is invoked so the component can render the actual data (storeItem)
-			// ctxt: a StoreItem instance
+			// storeItem: a StoreItem instance
+			// notificationOptions: An object with options in the properties:
+			//	e.g. { isRouting: true }
 	
 		}, {
 			key: 'notificationRender',
-			value: function notificationRender(storeItem) {
+			value: function notificationRender(storeItem, notificationOptions) {
 				console.log('[ViewComponent.notificationRender] invoked | storeItem = ', storeItem);
 			}
 		}, {
@@ -5891,11 +5907,13 @@
 			}
 	
 			// This method is invoked so the component can render the actual data (storeItem)
-			// ctxt: a StoreItem instance
+			// storeItem: a StoreItem instance
+			// notificationOptions: An object with options in the properties:
+			//	e.g. { isRouting: true }
 	
 		}, {
 			key: 'notificationRender',
-			value: function notificationRender(storeItem) {
+			value: function notificationRender(storeItem, notificationOptions) {
 				console.log('[NonVisualComponent.notificationRender] invoked | storeItem = ', storeItem);
 			}
 		}, {
@@ -5978,7 +5996,7 @@
 	// Returns: The resolved url if the original url is relative;
 	//	if the original url is absolute then it is returned as is
 	function applyBaseUri(url) {
-		if (val.substr(0, 7).toLowerCase() === 'http://' || val.substr(0, 8).toLowerCase() === 'https://') {
+		if (url.substr(0, 7).toLowerCase() === 'http://' || url.substr(0, 8).toLowerCase() === 'https://') {
 			// since url is absolute we do NOT apply the base uri!
 			return url;
 		}
@@ -6004,6 +6022,10 @@
 		// url: The url
 		// callback: void function (err, responseData)
 		get: function get(key, url, callback) {
+			if (!url) {
+				callback(new _InvalidArgumentError.InvalidArgumentError('Cannot GET: No url passed in'));
+				return;
+			}
 			request('GET', applyBaseUri(url), null, function (err, value) {
 				if (err) {
 					callback(err);
@@ -6023,6 +6045,10 @@
 		// data: The data to post
 		// callback: void function (err, responseData)
 		post: function post(key, url, data, callback) {
+			if (!url) {
+				callback(new _InvalidArgumentError.InvalidArgumentError('Cannot POST: No url passed in'));
+				return;
+			}
 			request('POST', applyBaseUri(url), data, function (err, value) {
 				if (err) {
 					callback(err);
@@ -6042,6 +6068,10 @@
 		// data: The data to put
 		// callback: void function (err, responseData)
 		put: function put(key, url, data, callback) {
+			if (!url) {
+				callback(new _InvalidArgumentError.InvalidArgumentError('Cannot PUT: No url passed in'));
+				return;
+			}
 			request('PUT', applyBaseUri(url), data, function (err, value) {
 				if (err) {
 					callback(err);
@@ -6060,6 +6090,10 @@
 		// url: The url
 		// callback: void function (err, responseData)
 		delete: function _delete(key, url, callback) {
+			if (!url) {
+				callback(new _InvalidArgumentError.InvalidArgumentError('Cannot DELETE: No url passed in'));
+				return;
+			}
 			request('DELETE', applyBaseUri(url), null, function (err, value) {
 				if (err) {
 					callback(err);
@@ -6079,6 +6113,10 @@
 		// data: The data to patch
 		// callback: void function (err, responseData)
 		patch: function patch(key, url, data, callback) {
+			if (!url) {
+				callback(new _InvalidArgumentError.InvalidArgumentError('Cannot PATCH: No url passed in'));
+				return;
+			}
 			request('PATCH', applyBaseUri(url), data, function (err, value) {
 				if (err) {
 					callback(err);

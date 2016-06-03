@@ -11,7 +11,7 @@
     "url": "http://www.nocrunchtime.com"
   },
   "dependencies": {
-    "affront": "^0.2.2",
+    "affront": "^0.2.4",
     "body-parser": "*",
     "express": "*",
     "raw-loader": "^0.5.1"
