@@ -570,10 +570,41 @@
 		}
 	
 		_createClass(Storage, [{
-			key: 'getItems',
+			key: 'getKeys',
 	
+	
+			// Gets an array of the keys of all the items in the Store at a given version
+			// (or at the latest version if version is null or undefined)
+			// Call syntax:
+			// - store.getKeys(version) => Array of strings (keys)
+			// - store.getKeys() => Array of strings (keys)
+			// version: The version number at which to get the store item
+			// Returns: An array of the keys if found, else null if no version exists
+			value: function getKeys(version) {
+				if (version !== undefined && version !== null) {
+					if (typeof version !== 'number') {
+						throw new _InvalidArgumentError.InvalidArgumentError('Store.getKeys::version argument must be a number');
+					}
+					if (version < 0) {
+						throw new _InvalidArgumentError.InvalidArgumentError('Store.getKeys::version argument must be a positive number');
+					}
+				}
+				if (this.versions.isEmpty()) {
+					return null;
+				}
+				var currentVersion = void 0;
+				if (version !== undefined && version !== null && version < this.versions.size) {
+					currentVersion = this.versions.get(version);
+				} else {
+					currentVersion = this.versions.last();
+				}
+				return currentVersion.data.keySeq().toJS();
+			}
 	
 			// Gets all store items in the store at a given version
+	
+		}, {
+			key: 'getItems',
 			value: function getItems(version) {
 				if (version !== undefined) {
 					if (typeof version !== 'number') {
@@ -746,6 +777,7 @@
 			}
 	
 			// Note: The first version will be version 0!
+			// Returns: The store item
 	
 		}, {
 			key: 'setItem',
@@ -776,6 +808,7 @@
 	
 			// Note: The first version will be version 0!
 			// Note: This method will forcibly create a new version since it IGNORES this._preserveHistory!!!
+			// Returns: The store item
 	
 		}, {
 			key: 'setItemAtNextVersion',
@@ -802,6 +835,14 @@
 	
 				this.router.onSetItem(item);
 				return item;
+			}
+	
+			// Sends out the notifications for a store item
+	
+		}, {
+			key: 'sendNotificationForStoreItem',
+			value: function sendNotificationForStoreItem(storeItem) {
+				this.subscriptionManager.notify(storeItem, {});
 			}
 		}, {
 			key: 'appendVersion',
@@ -5951,6 +5992,10 @@
 	
 	var _InvalidArgumentError = __webpack_require__(/*! ../errors/InvalidArgumentError */ 9);
 	
+	/*******************
+	 * Request function
+	 */
+	
 	// callback: function (err, response)
 	//	where response is an object if JSON.parseable or is the responseText
 	function request(method, url, data, callback) {
@@ -5988,6 +6033,10 @@
 		}
 	}
 	
+	/*******************
+	 * _baseUri
+	 */
+	
 	// the default base uri
 	var _baseUri = '';
 	
@@ -6003,6 +6052,70 @@
 		return _baseUri + url;
 	}
 	
+	/*******************
+	 * _minimumKeyedRequestThreshold (and client-side caching of requests)
+	 *
+	 * You can turn on throttling of keyed requests (for the same method and url) by setting the _minimumKeyedRequestThreshold
+	 * to a number greater than 0. Any other value will turn off throttling. When throttling is on then the subsequent requests
+	 * within the threshold will have the data served up from the Store (as opposed to making the actual request).
+	 */
+	
+	// If _minimumKeyedRequestThreshold is null or undefined:
+	// No throttling occurs. All requests are issued.
+	//
+	// If _minimumKeyedRequestThreshold is a number (in milliseconds):
+	// _minimumKeyedRequestThreshold is the minimum amount of time that must elapse before a new request
+	// can be sent with the same method to the same url for a keyed request. This is used for throttling
+	// in the cases where multiple requesters share the exact same request (i.e. same method and url). With
+	// the throttling, you can avoid making multiple requests needlessly, while keeping the code of the
+	// requesters oblivious and naive. The idea is simple: When the first request is issued, the request goes
+	// through and the result is stored in the Store. When the next request comes in within the
+	// _minimumKeyedRequestThreshold then the result is automatically got from the Store (rather than the
+	// request actually being made). Once the _minimumKeyedRequestThreshold has elapsed then the next request
+	// will actually be made. At no point is the item in the Store removed; that is left up to the users of
+	// the store item.
+	var _minimumKeyedRequestThreshold = null;
+	
+	// Gets whether or not the minimum keyed request threshold is being used
+	function uses_minimumKeyedRequestThreshold() {
+		return typeof _minimumKeyedRequestThreshold === 'number' && _minimumKeyedRequestThreshold > 0;
+	}
+	
+	// Only used for GET requests!
+	// Checks to see if we're still in the threshold for the key;
+	// If yes then gets the store item from the Store and sends the notifications out
+	// If no returns { isWithinThreshold: false } so the request can proceed
+	function handleBeforeRequestThresholdCheck(key, callback) {
+		if (uses_minimumKeyedRequestThreshold()) {
+			var mkrtStoreItem = _Store.Store.getItem('mkrt_' + key);
+			if (mkrtStoreItem) {
+				var deltaMillisecs = new Date().getTime() - mkrtStoreItem.value.createdAt;
+				if (deltaMillisecs < _minimumKeyedRequestThreshold) {
+					var foundStoreItem = _Store.Store.getItem(key);
+					if (foundStoreItem) {
+						_Store.Store.sendNotificationForStoreItem(foundStoreItem);
+						callback(null, foundStoreItem.value);
+						return { isWithinThreshold: true };
+					}
+				}
+			}
+		}
+	
+		return { isWithinThreshold: false };
+	}
+	
+	// Used after requests of any HTTP Method!
+	// Sets the threshold related information into the Store for the key
+	function handleAfterRequestThreshold(key, storeItem) {
+		if (uses_minimumKeyedRequestThreshold()) {
+			_Store.Store.setItem('mkrt_' + key, { createdAt: new Date().getTime(), storeItem: storeItem });
+		}
+	}
+	
+	/*******************
+	 * Http
+	 */
+	
 	var Http = exports.Http = {
 		// Gets the base uri
 		get BaseUri() {
@@ -6017,11 +6130,32 @@
 			_baseUri = val;
 		},
 	
+		// Gets the minimum keyed request threshold
+		get MinimumKeyedRequestThreshold() {
+			return _minimumKeyedRequestThreshold;
+		},
+	
+		// Sets the minimum keyed request threshold
+		set MinimumKeyedRequestThreshold(milliseconds) {
+			_minimumKeyedRequestThreshold = milliseconds;
+		},
+	
+		// Gets whether or not the minimum keyed request threshold is being used
+		get usesMinimumKeyedRequestThreshold() {
+			return uses_minimumKeyedRequestThreshold();
+		},
+	
 		// key: The key of the store item to set with the response data
 		// 	If key is set then the matching store item will be set
 		// url: The url
 		// callback: void function (err, responseData)
 		get: function get(key, url, callback) {
+			if (handleBeforeRequestThresholdCheck(key, callback).isWithinThreshold) {
+				// we got the store item from Store and don't need to query for it
+				// since we're still within the threshold!
+				return;
+			}
+	
 			if (!url) {
 				callback(new _InvalidArgumentError.InvalidArgumentError('Cannot GET: No url passed in'));
 				return;
@@ -6032,7 +6166,8 @@
 					return;
 				}
 				if (key) {
-					_Store.Store.setItem(key, value);
+					var storeItem = _Store.Store.setItem(key, value);
+					handleAfterRequestThreshold(key, storeItem);
 				}
 				callback(null, value);
 			});
@@ -6055,7 +6190,8 @@
 					return;
 				}
 				if (key) {
-					_Store.Store.setItem(key, value);
+					var storeItem = _Store.Store.setItem(key, value);
+					handleAfterRequestThreshold(key, storeItem);
 				}
 				callback(null, value);
 			});
@@ -6078,7 +6214,8 @@
 					return;
 				}
 				if (key) {
-					_Store.Store.setItem(key, value);
+					var storeItem = _Store.Store.setItem(key, value);
+					handleAfterRequestThreshold(key, storeItem);
 				}
 				callback(null, value);
 			});
@@ -6100,7 +6237,8 @@
 					return;
 				}
 				if (key) {
-					_Store.Store.setItem(key, value);
+					var storeItem = _Store.Store.setItem(key, value);
+					handleAfterRequestThreshold(key, storeItem);
 				}
 				callback(null, value);
 			});
@@ -6123,7 +6261,8 @@
 					return;
 				}
 				if (key) {
-					_Store.Store.setItem(key, value);
+					var storeItem = _Store.Store.setItem(key, value);
+					handleAfterRequestThreshold(key, storeItem);
 				}
 				callback(null, value);
 			});
