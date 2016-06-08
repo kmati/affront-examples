@@ -51,7 +51,7 @@
 	
 	var _affront = __webpack_require__(/*! affront */ 1);
 	
-	var _lib = __webpack_require__(/*! ../lib */ 45);
+	var _lib = __webpack_require__(/*! ../lib */ 46);
 	
 	// add the components of the app
 	/*
@@ -120,7 +120,7 @@
 	
 	var _Store = __webpack_require__(/*! ./Store */ 7);
 	
-	var _Http = __webpack_require__(/*! ./Http */ 44);
+	var _Http = __webpack_require__(/*! ./Http */ 45);
 	
 	var Affront = exports.Affront = {
 		Router: new _Router.Router(),
@@ -1543,7 +1543,7 @@
 	
 	var _TemplateViewComponent = __webpack_require__(/*! ./TemplateViewComponent */ 42);
 	
-	var _NonVisualComponent = __webpack_require__(/*! ./NonVisualComponent */ 43);
+	var _NonVisualComponent = __webpack_require__(/*! ./NonVisualComponent */ 44);
 	
 	var Component = exports.Component = {
 		ViewComponent: _ViewComponent.ViewComponent,
@@ -5811,6 +5811,8 @@
 	
 	var _mustache2 = _interopRequireDefault(_mustache);
 	
+	__webpack_require__(/*! ../utils/String */ 43);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -5818,6 +5820,8 @@
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var classNameTrailers = [' ', '"', '\''];
 	
 	var TemplateViewComponent = exports.TemplateViewComponent = function (_ViewComponent) {
 		_inherits(TemplateViewComponent, _ViewComponent);
@@ -5841,7 +5845,9 @@
 					var content = _this.templates[name];
 					for (var oCN in localCSS) {
 						var nCN = localCSS[oCN];
-						content = content.replace(new RegExp('class="' + oCN + '"', 'gi'), 'class="' + nCN + '"').replace(new RegExp('class=\'' + oCN + '\'', 'gi'), 'class=\'' + nCN + '\'');
+	
+						// replace oCN CSS class names in the class attributes
+						content = content.replaceWithin('class="', '"', oCN, classNameTrailers, nCN).replaceWithin('class=\'', '\'', oCN, classNameTrailers, nCN).replaceWithin('CLASS="', '"', oCN, classNameTrailers, nCN).replaceWithin('CLASS=\'', '\'', oCN, classNameTrailers, nCN);
 					}
 					_this.templates[name] = content;
 				}
@@ -5903,6 +5909,60 @@
 
 /***/ },
 /* 43 */
+/*!***************************************!*\
+  !*** ./~/affront/lib/utils/String.js ***!
+  \***************************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	/*
+	 * String extensions
+	 */
+	
+	// Replaces all occurrences of a match within a prefix and suffix in the string
+	// e.g.
+	// let str = '<foo class="atom molecule quark"></foo><bar class="molecule"/>';
+	// let result = str.replaceWithin('class="', '"', 'molecule', [' ', '"', '\''], 'water');
+	// assert.equal('<foo class="atom water quark"></foo><bar class="water"/>', result); // 'molecule' replaced with 'water'
+	//
+	// Assumes:
+	// 1. The match is followed only by the specified match next chars array
+	
+	String.prototype.replaceWithin = function (prefix, suffix, match, matchNextChars, replacement) {
+		var str = this;
+		var oldI = -1;
+	
+		var _loop = function _loop() {
+			var locPrefix = str.indexOf(prefix, oldI + 1);
+			if (locPrefix === -1) return "break";
+	
+			var locS = locPrefix + prefix.length - 1;
+			var locSuffix = str.indexOf(suffix, locS + 1);
+			if (locSuffix === -1) return "break";
+	
+			var piece = str.substr(locS + 1, locSuffix - locS);
+	
+			matchNextChars.forEach(function (matchNextChar) {
+				var re = new RegExp(match + matchNextChar, 'g');
+				piece = piece.replace(re, replacement + matchNextChar);
+			});
+	
+			var left = str.substr(0, locS + 1) + piece;
+			str = left + str.substr(locSuffix + 1);
+	
+			oldI = left.length + suffix.length - 1;
+		};
+	
+		while (true) {
+			var _ret = _loop();
+	
+			if (_ret === "break") break;
+		}
+		return str;
+	};
+
+/***/ },
+/* 44 */
 /*!*******************************************************!*\
   !*** ./~/affront/lib/Component/NonVisualComponent.js ***!
   \*******************************************************/
@@ -5970,7 +6030,7 @@
 	;
 
 /***/ },
-/* 44 */
+/* 45 */
 /*!*************************************!*\
   !*** ./~/affront/lib/Http/index.js ***!
   \*************************************/
@@ -6270,7 +6330,7 @@
 	};
 
 /***/ },
-/* 45 */
+/* 46 */
 /*!**********************!*\
   !*** ./lib/index.js ***!
   \**********************/
@@ -6283,15 +6343,15 @@
 	});
 	exports.ComplexTemplateViewComponent = exports.MyTemplateViewComponent = exports.MyViewComponent = exports.DumbComponent = exports.AtomComponent = undefined;
 	
-	var _AtomComponent = __webpack_require__(/*! ./components/AtomComponent */ 46);
+	var _AtomComponent = __webpack_require__(/*! ./components/AtomComponent */ 47);
 	
-	var _DumbComponent = __webpack_require__(/*! ./components/DumbComponent */ 47);
+	var _DumbComponent = __webpack_require__(/*! ./components/DumbComponent */ 48);
 	
-	var _MyViewComponent = __webpack_require__(/*! ./components/MyViewComponent */ 48);
+	var _MyViewComponent = __webpack_require__(/*! ./components/MyViewComponent */ 49);
 	
-	var _MyTemplateViewComponent = __webpack_require__(/*! ./components/MyTemplateViewComponent */ 53);
+	var _MyTemplateViewComponent = __webpack_require__(/*! ./components/MyTemplateViewComponent */ 54);
 	
-	var _ComplexTemplateViewComponent = __webpack_require__(/*! ./components/ComplexTemplateViewComponent */ 58);
+	var _ComplexTemplateViewComponent = __webpack_require__(/*! ./components/ComplexTemplateViewComponent */ 59);
 	
 	exports.AtomComponent = _AtomComponent.AtomComponent;
 	exports.DumbComponent = _DumbComponent.DumbComponent;
@@ -6300,7 +6360,7 @@
 	exports.ComplexTemplateViewComponent = _ComplexTemplateViewComponent.ComplexTemplateViewComponent;
 
 /***/ },
-/* 46 */
+/* 47 */
 /*!***********************************************!*\
   !*** ./lib/components/AtomComponent/index.js ***!
   \***********************************************/
@@ -6366,7 +6426,7 @@
 	;
 
 /***/ },
-/* 47 */
+/* 48 */
 /*!***********************************************!*\
   !*** ./lib/components/DumbComponent/index.js ***!
   \***********************************************/
@@ -6430,7 +6490,7 @@
 	;
 
 /***/ },
-/* 48 */
+/* 49 */
 /*!*************************************************!*\
   !*** ./lib/components/MyViewComponent/index.js ***!
   \*************************************************/
@@ -6453,7 +6513,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	__webpack_require__(/*! ./styles.css */ 49);
+	__webpack_require__(/*! ./styles.css */ 50);
 	
 	// A visual component
 	
@@ -6509,7 +6569,7 @@
 	;
 
 /***/ },
-/* 49 */
+/* 50 */
 /*!***************************************************!*\
   !*** ./lib/components/MyViewComponent/styles.css ***!
   \***************************************************/
@@ -6518,10 +6578,10 @@
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 50);
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 51);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 52)(content, {});
+	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 53)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6538,13 +6598,13 @@
 	}
 
 /***/ },
-/* 50 */
+/* 51 */
 /*!******************************************************************!*\
   !*** ./~/css-loader!./lib/components/MyViewComponent/styles.css ***!
   \******************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 51)();
+	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 52)();
 	// imports
 	
 	
@@ -6555,7 +6615,7 @@
 
 
 /***/ },
-/* 51 */
+/* 52 */
 /*!**************************************!*\
   !*** ./~/css-loader/lib/css-base.js ***!
   \**************************************/
@@ -6613,7 +6673,7 @@
 	};
 
 /***/ },
-/* 52 */
+/* 53 */
 /*!*************************************!*\
   !*** ./~/style-loader/addStyles.js ***!
   \*************************************/
@@ -6868,7 +6928,7 @@
 
 
 /***/ },
-/* 53 */
+/* 54 */
 /*!*********************************************************!*\
   !*** ./lib/components/MyTemplateViewComponent/index.js ***!
   \*********************************************************/
@@ -6885,7 +6945,7 @@
 	
 	var _affront = __webpack_require__(/*! affront */ 1);
 	
-	var _styles = __webpack_require__(/*! ./styles.css */ 54);
+	var _styles = __webpack_require__(/*! ./styles.css */ 55);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -6906,8 +6966,8 @@
 			_classCallCheck(this, MyTemplateViewComponent);
 	
 			var templates = {
-				'placeholder': __webpack_require__(/*! raw!./placeholder-template.html */ 56),
-				'view': __webpack_require__(/*! raw!./view-template.html */ 57)
+				'placeholder': __webpack_require__(/*! raw!./placeholder-template.html */ 57),
+				'view': __webpack_require__(/*! raw!./view-template.html */ 58)
 			};
 	
 			var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MyTemplateViewComponent).call(this, routeUrl, domElement, templates, _styles2.default));
@@ -6951,7 +7011,7 @@
 	;
 
 /***/ },
-/* 54 */
+/* 55 */
 /*!***********************************************************!*\
   !*** ./lib/components/MyTemplateViewComponent/styles.css ***!
   \***********************************************************/
@@ -6960,10 +7020,10 @@
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 55);
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 56);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 52)(content, {});
+	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 53)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6980,13 +7040,13 @@
 	}
 
 /***/ },
-/* 55 */
+/* 56 */
 /*!**************************************************************************!*\
   !*** ./~/css-loader!./lib/components/MyTemplateViewComponent/styles.css ***!
   \**************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 51)();
+	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 52)();
 	// imports
 	
 	
@@ -6999,7 +7059,7 @@
 	};
 
 /***/ },
-/* 56 */
+/* 57 */
 /*!*****************************************************************************************!*\
   !*** ./~/raw-loader!./lib/components/MyTemplateViewComponent/placeholder-template.html ***!
   \*****************************************************************************************/
@@ -7008,7 +7068,7 @@
 	module.exports = "<div class=\"segment\">Loading...</div>"
 
 /***/ },
-/* 57 */
+/* 58 */
 /*!**********************************************************************************!*\
   !*** ./~/raw-loader!./lib/components/MyTemplateViewComponent/view-template.html ***!
   \**********************************************************************************/
@@ -7017,7 +7077,7 @@
 	module.exports = "<div class=\"segment\">This is my real info | name = {{name}}</div>"
 
 /***/ },
-/* 58 */
+/* 59 */
 /*!**************************************************************!*\
   !*** ./lib/components/ComplexTemplateViewComponent/index.js ***!
   \**************************************************************/
@@ -7034,11 +7094,11 @@
 	
 	var _affront = __webpack_require__(/*! affront */ 1);
 	
-	var _styles = __webpack_require__(/*! ./styles.css */ 59);
+	var _styles = __webpack_require__(/*! ./styles.css */ 60);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
-	var _AddressControl = __webpack_require__(/*! ./controls/AddressControl */ 61);
+	var _AddressControl = __webpack_require__(/*! ./controls/AddressControl */ 62);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -7057,8 +7117,8 @@
 			_classCallCheck(this, ComplexTemplateViewComponent);
 	
 			var templates = {
-				'placeholder': __webpack_require__(/*! raw!./placeholder-template.html */ 65),
-				'view': __webpack_require__(/*! raw!./view-template.html */ 66)
+				'placeholder': __webpack_require__(/*! raw!./placeholder-template.html */ 66),
+				'view': __webpack_require__(/*! raw!./view-template.html */ 67)
 			};
 	
 			var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ComplexTemplateViewComponent).call(this, routeUrl, domElement, templates, _styles2.default));
@@ -7105,7 +7165,7 @@
 	;
 
 /***/ },
-/* 59 */
+/* 60 */
 /*!****************************************************************!*\
   !*** ./lib/components/ComplexTemplateViewComponent/styles.css ***!
   \****************************************************************/
@@ -7114,10 +7174,10 @@
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 60);
+	var content = __webpack_require__(/*! !./../../../~/css-loader!./styles.css */ 61);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 52)(content, {});
+	var update = __webpack_require__(/*! ./../../../~/style-loader/addStyles.js */ 53)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -7134,13 +7194,13 @@
 	}
 
 /***/ },
-/* 60 */
+/* 61 */
 /*!*******************************************************************************!*\
   !*** ./~/css-loader!./lib/components/ComplexTemplateViewComponent/styles.css ***!
   \*******************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 51)();
+	exports = module.exports = __webpack_require__(/*! ./../../../~/css-loader/lib/css-base.js */ 52)();
 	// imports
 	
 	
@@ -7153,7 +7213,7 @@
 	};
 
 /***/ },
-/* 61 */
+/* 62 */
 /*!**************************************************************************************!*\
   !*** ./lib/components/ComplexTemplateViewComponent/controls/AddressControl/index.js ***!
   \**************************************************************************************/
@@ -7170,7 +7230,7 @@
 	
 	var _affront = __webpack_require__(/*! affront */ 1);
 	
-	var _styles = __webpack_require__(/*! ./styles.css */ 62);
+	var _styles = __webpack_require__(/*! ./styles.css */ 63);
 	
 	var _styles2 = _interopRequireDefault(_styles);
 	
@@ -7188,7 +7248,7 @@
 		function AddressControl(id) {
 			_classCallCheck(this, AddressControl);
 	
-			var template = __webpack_require__(/*! raw!./view-template.html */ 64);
+			var template = __webpack_require__(/*! raw!./view-template.html */ 65);
 			return _possibleConstructorReturn(this, Object.getPrototypeOf(AddressControl).call(this, id, template, _styles2.default));
 		}
 	
@@ -7206,7 +7266,7 @@
 	;
 
 /***/ },
-/* 62 */
+/* 63 */
 /*!****************************************************************************************!*\
   !*** ./lib/components/ComplexTemplateViewComponent/controls/AddressControl/styles.css ***!
   \****************************************************************************************/
@@ -7215,10 +7275,10 @@
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(/*! !./../../../../../~/css-loader!./styles.css */ 63);
+	var content = __webpack_require__(/*! !./../../../../../~/css-loader!./styles.css */ 64);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(/*! ./../../../../../~/style-loader/addStyles.js */ 52)(content, {});
+	var update = __webpack_require__(/*! ./../../../../../~/style-loader/addStyles.js */ 53)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -7235,13 +7295,13 @@
 	}
 
 /***/ },
-/* 63 */
+/* 64 */
 /*!*******************************************************************************************************!*\
   !*** ./~/css-loader!./lib/components/ComplexTemplateViewComponent/controls/AddressControl/styles.css ***!
   \*******************************************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(/*! ./../../../../../~/css-loader/lib/css-base.js */ 51)();
+	exports = module.exports = __webpack_require__(/*! ./../../../../../~/css-loader/lib/css-base.js */ 52)();
 	// imports
 	
 	
@@ -7254,7 +7314,7 @@
 	};
 
 /***/ },
-/* 64 */
+/* 65 */
 /*!***************************************************************************************************************!*\
   !*** ./~/raw-loader!./lib/components/ComplexTemplateViewComponent/controls/AddressControl/view-template.html ***!
   \***************************************************************************************************************/
@@ -7263,7 +7323,7 @@
 	module.exports = "<div class=\"segment\">\n\t<table>\n\t\t<tr>\n\t\t\t<td>Street:</td>\n\t\t\t<td>{{street1}}</td>\n\t\t\t<td>Apt:</td>\n\t\t\t<td>{{street2}}</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>City:</td>\n\t\t\t<td>{{city}}</td>\n\t\t\t<td>State:</td>\n\t\t\t<td>{{state}}</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>Zip:</td>\n\t\t\t<td>{{zip}}</td>\n\t\t\t<td>Country:</td>\n\t\t\t<td>{{country}}</td>\n\t\t</tr>\n\t</table>\n</div>"
 
 /***/ },
-/* 65 */
+/* 66 */
 /*!**********************************************************************************************!*\
   !*** ./~/raw-loader!./lib/components/ComplexTemplateViewComponent/placeholder-template.html ***!
   \**********************************************************************************************/
@@ -7272,7 +7332,7 @@
 	module.exports = "<div class=\"segment\">Loading...</div>"
 
 /***/ },
-/* 66 */
+/* 67 */
 /*!***************************************************************************************!*\
   !*** ./~/raw-loader!./lib/components/ComplexTemplateViewComponent/view-template.html ***!
   \***************************************************************************************/
