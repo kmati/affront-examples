@@ -122,6 +122,7 @@
 	
 	var _Http = __webpack_require__(/*! ./Http */ 45);
 	
+	// The Affront API
 	var Affront = exports.Affront = {
 		Router: new _Router.Router(),
 		ViewComponent: _Component.Component.ViewComponent,
@@ -137,6 +138,7 @@
 		}
 	};
 	
+	// Add the Affront library to the browser's window object
 	if (!window) window = {};
 	window.Affront = Affront;
 
@@ -164,7 +166,11 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
+	// The router handles client-side route changes
+	
 	var Router = exports.Router = function () {
+		// The default constructor of a router
+	
 		function Router() {
 			_classCallCheck(this, Router);
 	
@@ -179,6 +185,9 @@
 			});
 		}
 	
+		// Initializes the router
+	
+	
 		_createClass(Router, [{
 			key: 'init',
 			value: function init() {
@@ -192,7 +201,8 @@
 				this.onStateChanged(state);
 			}
 	
-			// Used to bind <a> elements
+			// Invoked to bind the <a> elements to client-side route changes
+			// ele: An anchor element
 	
 		}, {
 			key: 'bindLinkElement',
@@ -228,6 +238,10 @@
 					ele.hasClickHandler = true;
 				}
 			}
+	
+			// The handler that is invoked whenever the client-side route changes
+			// newState: The new state information about the client-side route
+	
 		}, {
 			key: 'onStateChanged',
 			value: function onStateChanged(newState) {
@@ -269,6 +283,11 @@
 					_Store.Store.sendNotificationsForCurrentVersion({ isRouting: true });
 				}
 			}
+	
+			// Finds the index of a version that is "forward" relative to the current client-side route
+			// routeUrl: The future route
+			// Returns: The index if found, else -1
+	
 		}, {
 			key: 'findForwardVersionIndexWithRoute',
 			value: function findForwardVersionIndexWithRoute(routeUrl) {
@@ -282,6 +301,10 @@
 				}
 				return -1;
 			}
+	
+			// Invoked by the Store when an item is set so that the future versions can be disposed of
+			// storeItem: The store item
+	
 		}, {
 			key: 'onSetItem',
 			value: function onSetItem(storeItem) {
@@ -291,7 +314,7 @@
 			}
 	
 			// Adds a routable component
-			// component: An instance of Component
+			// component: A Component instance
 	
 		}, {
 			key: 'addComponent',
@@ -339,12 +362,18 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
+	// The 2 modes for a component
 	var Mode = {
-		Rendered: 'rendered',
+		Rendered: 'rendered', // even non-visual components can be rendered
 		Hidden: 'hidden'
 	};
 	
+	// The base class for all components
+	
 	var ComponentBase = exports.ComponentBase = function () {
+		// The constructor for a component
+		// routeUrl: The client-side route
+	
 		function ComponentBase(routeUrl) {
 			_classCallCheck(this, ComponentBase);
 	
@@ -353,6 +382,10 @@
 			this.mode = Mode.Hidden;
 			this.lastEvent = null;
 		}
+	
+		// Subscribes the component to listen for notifications (which are sent based on changes to data in the Store)
+		// key: The key of the store item to receive notifications for
+	
 	
 		_createClass(ComponentBase, [{
 			key: 'subscribe',
@@ -365,6 +398,10 @@
 					}
 				});
 			}
+	
+			// The handler that is invoked by the Router when the client-side route changes
+			// url: The client-side route
+	
 		}, {
 			key: 'onUrlChanged',
 			value: function onUrlChanged(url) {
@@ -391,7 +428,7 @@
 				}
 			}
 	
-			// This method is invoked so the component can set itself up to render content;
+			// This method is invoked by the onUrlChanged method so that the component can set itself up to render content;
 			// i.e. boiler plate content (static content) must be displayed
 			// ctxt: an UrlContext instance
 	
@@ -411,6 +448,9 @@
 			value: function notificationRender(storeItem, notificationOptions) {
 				throw new _NotImplementedError.NotImplementedError('notificationRender method not yet implemented');
 			}
+	
+			// This method is invoked by the onUrlChanged method so that the component can hide itself
+	
 		}, {
 			key: 'hide',
 			value: function hide() {
@@ -485,7 +525,13 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var UrlContext = exports.UrlContext = function UrlContext(url, params) {
+	// The context of a route url
+	
+	var UrlContext =
+	// The constructor of an url context
+	// url: The route url
+	// params: The route parameters
+	exports.UrlContext = function UrlContext(url, params) {
 		_classCallCheck(this, UrlContext);
 	
 		this.url = url;
@@ -560,7 +606,11 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
+	// The store for client-side data (aka the single source of truth)
+	
 	var Storage = function () {
+		// The default constructor of the store
+	
 		function Storage() {
 			_classCallCheck(this, Storage);
 	
@@ -569,9 +619,17 @@
 			this.subscriptionManager = new _Subscriptions.Subscriptions.SubscriptionManager();
 		}
 	
+		/******************
+	  * preserveHistory
+	  */
+	
 		_createClass(Storage, [{
 			key: 'getKeys',
 	
+	
+			/******************
+	   * get keys and items
+	   */
 	
 			// Gets an array of the keys of all the items in the Store at a given version
 			// (or at the latest version if version is null or undefined)
@@ -601,7 +659,9 @@
 				return currentVersion.data.keySeq().toJS();
 			}
 	
-			// Gets all store items in the store at a given version
+			// Gets all store items in the store at a given version or the current version
+			// version: The version number at which to get the store item (if null or undefined then the current version will be used)
+			// Returns: An object whose properties contain all the store items for the specified version
 	
 		}, {
 			key: 'getItems',
@@ -659,6 +719,10 @@
 				}
 				return currentVersion.data.get(key);
 			}
+	
+			/******************
+	   * versioning
+	   */
 	
 			// key: The key to find in the matching version
 			// fn: The predicate to match on for a storeItem whose call signature is: function (StoreItem) => boolean
@@ -740,6 +804,42 @@
 				return excludedVersions;
 			}
 	
+			// Appends a version to the versions property of the Store
+			// version: A version
+	
+		}, {
+			key: 'appendVersion',
+			value: function appendVersion(version) {
+				this.versions = this.versions.push(version);
+			}
+	
+			/******************
+	   * notifications
+	   */
+	
+			// Subscribes to get called whenever the state changes at a given key in the store
+			// key: The key to listen for state changes on
+			// context: The object that owns the function to invoke
+			// fn: The function to invoke whose signature is: void function (StoreItem)
+			// Returns: A subscriber instance
+			// Remarks:
+			// 1. This method can be called in the following 2 ways:
+			// - subscribe(key, context, fn)
+			// - subscribe(key, fn)
+			// 2. To unsubscribe, call: subscriberInstance.unsubscribe()
+	
+		}, {
+			key: 'subscribe',
+			value: function subscribe(key, context, fn) {
+				if (typeof context === 'function') {
+					fn = context;
+					context = null;
+				}
+	
+				var subscription = this.subscriptionManager.getSubscription(key);
+				return subscription.addSubscriber(new _Subscriptions.Subscriptions.Subscriber(context, fn));
+			}
+	
 			// Sends out the notifications for all the store items for the current (i.e. latest) version
 			// notificationOptions: An object with options in the properties:
 			//	e.g. { isRouting: true }
@@ -776,7 +876,23 @@
 				}
 			}
 	
+			// Sends out the notifications for a store item
+			// storeItem: A store item
+	
+		}, {
+			key: 'sendNotificationForStoreItem',
+			value: function sendNotificationForStoreItem(storeItem) {
+				this.subscriptionManager.notify(storeItem, {});
+			}
+	
+			/******************
+	   * setting items
+	   */
+	
+			// Sets a store item
 			// Note: The first version will be version 0!
+			// key: The key of the store item
+			// value: The value of the store item (i.e. the actual data)
 			// Returns: The store item
 	
 		}, {
@@ -806,8 +922,11 @@
 				return item;
 			}
 	
+			// Increments the version count and sets a store item into the new current version
 			// Note: The first version will be version 0!
 			// Note: This method will forcibly create a new version since it IGNORES this._preserveHistory!!!
+			// key: The key of the store item
+			// value: The value of the store item (i.e. the actual data)
 			// Returns: The store item
 	
 		}, {
@@ -836,42 +955,6 @@
 				this.router.onSetItem(item);
 				return item;
 			}
-	
-			// Sends out the notifications for a store item
-	
-		}, {
-			key: 'sendNotificationForStoreItem',
-			value: function sendNotificationForStoreItem(storeItem) {
-				this.subscriptionManager.notify(storeItem, {});
-			}
-		}, {
-			key: 'appendVersion',
-			value: function appendVersion(version) {
-				this.versions = this.versions.push(version);
-			}
-	
-			// Subscribes to get called whenever the state changes at a given key in the store
-			// key: The key to listen for state changes on
-			// context: The object that owns the function to invoke
-			// fn: The function to invoke whose signature is: void function (StoreItem)
-			// Returns: A subscriber instance
-			// Remarks:
-			// 1. This method can be called in the following 2 ways:
-			// - subscribe(key, context, fn)
-			// - subscribe(key, fn)
-			// 2. To unsubscribe, call: subscriberInstance.unsubscribe()
-	
-		}, {
-			key: 'subscribe',
-			value: function subscribe(key, context, fn) {
-				if (typeof context === 'function') {
-					fn = context;
-					context = null;
-				}
-	
-				var subscription = this.subscriptionManager.getSubscription(key);
-				return subscription.addSubscriber(new _Subscriptions.Subscriptions.Subscriber(context, fn));
-			}
 		}, {
 			key: 'preserveHistory',
 			get: function get() {
@@ -888,6 +971,9 @@
 	
 		return Storage;
 	}();
+	
+	// export the singleton Store instance
+	
 	
 	var Store = exports.Store = new Storage();
 
@@ -1215,6 +1301,7 @@
 	// The Subscriber encapsulates a method or function that subscribes for notifications
 	
 	var Subscriber = exports.Subscriber = function () {
+		// The constructor for a subscriber
 		// context: The object that owns the method
 		// fn: The method or function to be invoked for the notifications
 	
@@ -1235,7 +1322,8 @@
 				this.subscription.removeSubscriber(this);
 			}
 	
-			// Calls the method or function with the store item
+			// Calls the subscribed method or function and passes it the store item
+			// storeItem: The store item
 			// notificationOptions: An object with options in the properties:
 			//	e.g. { isRouting: true }
 	
@@ -1276,6 +1364,9 @@
 	// whenever the store item matching the key changes in the store
 	
 	var Subscription = exports.Subscription = function () {
+		// The constructor of a subscription
+		// key: The key of store items to listen to notifications for
+	
 		function Subscription(key) {
 			_classCallCheck(this, Subscription);
 	
@@ -1283,24 +1374,40 @@
 			this.subscribers = [];
 		}
 	
+		// Adds a subscriber to the subscription
+		// subscriber: A subscriber (see Subscriber.js for details)
+	
+	
 		_createClass(Subscription, [{
 			key: "addSubscriber",
 			value: function addSubscriber(subscriber) {
+				// add the subscriber instance to the subscribers Array property
 				this.subscribers.push(subscriber);
+	
+				// set the subscription of the subscriber instance to this subscription
 				subscriber.subscription = this;
 				return subscriber;
 			}
+	
+			// Removes a subscriber from the subscription
+			// subscriber: A subscriber (see Subscriber.js for details)
+	
 		}, {
 			key: "removeSubscriber",
 			value: function removeSubscriber(subscriber) {
+				// remove the subscriber instance from the subscribers Array property
 				var index = this.subscribers.findIndex(function (f) {
 					return f === subscriber;
 				});
 				this.subscribers.splice(index, 1);
+	
+				// unset the subscription of the subscriber instance
 				subscriber.subscription = null;
 				return subscriber;
 			}
 	
+			// Notifies all the subscribers by sending a store item and notification options to them
+			// storeItem: A store item
 			// notificationOptions: An object with options in the properties:
 			//	e.g. { isRouting: true }
 	
@@ -1342,11 +1449,18 @@
 	// Handles: subscribing and notification
 	
 	var SubscriptionManager = exports.SubscriptionManager = function () {
+		// The default constructor of a subscription manager
+	
 		function SubscriptionManager() {
 			_classCallCheck(this, SubscriptionManager);
 	
 			this.subscriptions = {};
 		}
+	
+		// Gets a subscription
+		// key: The key of the store item that the subscription is for
+		// Returns: The subscription if found, else undefined
+	
 	
 		_createClass(SubscriptionManager, [{
 			key: 'getSubscription',
@@ -1359,6 +1473,8 @@
 				return subscription;
 			}
 	
+			// Notifies the subscribed listeners who are listening for notifications for the store item
+			// storeItem: The store item
 			// notificationOptions: An object with options in the properties:
 			//	e.g. { isRouting: true }
 	
@@ -1392,7 +1508,13 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var StoreItem = exports.StoreItem = function StoreItem(key, value) {
+	// The class that defines a store item
+	
+	var StoreItem =
+	// The constructor for a store item
+	// key: The key that identifies the store item
+	// value: The value of the store item (i.e. the data)
+	exports.StoreItem = function StoreItem(key, value) {
 		_classCallCheck(this, StoreItem);
 	
 		this.key = key;
@@ -1446,8 +1568,13 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
+	// The notification event class that is to be used when there is a Store item change that leads to a notification
+	
 	var NotificationEvent = exports.NotificationEvent = function (_EventBase) {
 		_inherits(NotificationEvent, _EventBase);
+	
+		// The constructor of a notification event
+		// storeItem: A store item
 	
 		function NotificationEvent(storeItem) {
 			_classCallCheck(this, NotificationEvent);
@@ -1478,7 +1605,11 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var EventBase = exports.EventBase = function EventBase() {
+	// The base class for all Affront events
+	
+	var EventBase =
+	// The default constructor for an event
+	exports.EventBase = function EventBase() {
 		_classCallCheck(this, EventBase);
 	
 		this.createdAt = new Date();
@@ -1508,8 +1639,13 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
+	// The route changed event class that is to be used when there is a client-side route change
+	
 	var RouteChangedEvent = exports.RouteChangedEvent = function (_EventBase) {
 		_inherits(RouteChangedEvent, _EventBase);
+	
+		// The constructor of a route changed event
+		// ctxt: The route information
 	
 		function RouteChangedEvent(ctxt) {
 			_classCallCheck(this, RouteChangedEvent);
@@ -1581,9 +1717,13 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
+	// The base class for all visual components that do NOT have templates.
+	// These visual components can have controls to encapsulate internal visual functionality.
+	
 	var ViewComponent = exports.ViewComponent = function (_ComponentBase) {
 		_inherits(ViewComponent, _ComponentBase);
 	
+		// The constructor for a visual component that does NOT have any templates
 		// routeUrl: The route url to which the component is bound
 		// domContainerElement: The element that will be rendered into
 	
@@ -1598,6 +1738,10 @@
 			return _this;
 		}
 	
+		// Adds a control to the visual component
+		// control: A Control instance
+	
+	
 		_createClass(ViewComponent, [{
 			key: 'addControl',
 			value: function addControl(control) {
@@ -1607,7 +1751,8 @@
 				this.controls[control.id] = control;
 			}
 	
-			// val: Either controlId or control instance
+			// Removes a control from the visual component
+			// val: Either a controlId or a Control instance
 	
 		}, {
 			key: 'removeControl',
@@ -1618,6 +1763,10 @@
 					delete this.controls[val];
 				}
 			}
+	
+			// Updates the DOM container element with markup
+			// markupStr: The markup to update the DOM container element with (i.e. set innerHTML with)
+	
 		}, {
 			key: 'updateDOM',
 			value: function updateDOM(markupStr) {
@@ -1651,6 +1800,9 @@
 			value: function notificationRender(storeItem, notificationOptions) {
 				console.log('[ViewComponent.notificationRender] invoked | storeItem = ', storeItem);
 			}
+	
+			// Invoked when the component is about to hide itself
+	
 		}, {
 			key: 'hide',
 			value: function hide() {
@@ -1691,7 +1843,15 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
+	// The base class for a control
+	
 	var Control = exports.Control = function () {
+		// The constructor of a control
+		// id: The id of the control
+		// template: The template used for rendering the control
+		// localCSS: An object whose properties are CSS class names and whose values are the localized CSS class names
+		//		The control will change the matching CSS class names in the templates.
+	
 		function Control(id, template, localCSS) {
 			_classCallCheck(this, Control);
 	
@@ -1722,6 +1882,10 @@
 			this.controls = {};
 		}
 	
+		// Adds a child control to the control
+		// control: The Control instance
+	
+	
 		_createClass(Control, [{
 			key: 'addControl',
 			value: function addControl(control) {
@@ -1731,7 +1895,8 @@
 				this.controls[control.id] = control;
 			}
 	
-			// val: Either controlId or control instance
+			// Removes a child control from the control
+			// val: Either a controlId or a Control instance
 	
 		}, {
 			key: 'removeControl',
@@ -1742,6 +1907,11 @@
 					delete this.controls[val];
 				}
 			}
+	
+			// Renders the control (and all its contained controls)
+			// data: The object that contains the data to substitute into the template
+			// eventObj: Event related data for the event that caused the control to render
+	
 		}, {
 			key: 'render',
 			value: function render(data, eventObj) {
@@ -1763,6 +1933,7 @@
 	
 			// This method is invoked so the control can bind events after the DOM has been updated
 			// domContainerElement: The DOM container element into which the control was rendered
+			// eventObj: Event related data for the event that caused the control to render
 	
 		}, {
 			key: 'onDOMUpdated',
@@ -1781,6 +1952,8 @@
 	
 			// The Control classes that extend this type can add custom logic here to be executed after the domContainerElement
 			// has been updated
+			// domContainerElement: The DOM container element into which the control was rendered
+			// eventObj: Event related data for the event that caused the control to render
 	
 		}, {
 			key: 'onDOMUpdatedNotification',
@@ -5821,11 +5994,15 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
+	// The characters that immediately follow a CSS class referenced in an HTML class attribute
 	var classNameTrailers = [' ', '"', '\''];
+	
+	// The base class for all visual components that use templates
 	
 	var TemplateViewComponent = exports.TemplateViewComponent = function (_ViewComponent) {
 		_inherits(TemplateViewComponent, _ViewComponent);
 	
+		// The constructor for a visual component that uses templates
 		// routeUrl: The route url to which the component is bound
 		// domContainerElement: The element that will be rendered into
 		// templates: An object whose properties are template names and whose values are the content of the templates
@@ -5855,11 +6032,20 @@
 			return _this;
 		}
 	
+		// Adds a template to the component
+		// name: The name of the template
+		// content: The content of the template
+	
+	
 		_createClass(TemplateViewComponent, [{
 			key: 'addTemplate',
 			value: function addTemplate(name, content) {
 				this.templates[name] = content;
 			}
+	
+			// Removes a template from the component
+			// name: The name of the template
+	
 		}, {
 			key: 'removeTemplate',
 			value: function removeTemplate(name) {
@@ -5870,6 +6056,9 @@
 			// A template is a string that will be replaced using mustache.
 			// For controls within the template, you should use: {{ControlClassName.ControlId}},
 			//	e.g. {{MyControl.123}} => where the class is MyControl and the id is 123.
+			// name: The name of the template to render
+			// data: The object that contains the data to substitute into the template
+			// Returns: The rendered content
 	
 		}, {
 			key: 'renderTemplate',
@@ -5985,9 +6174,12 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
+	// The base class for non-visual components
+	
 	var NonVisualComponent = exports.NonVisualComponent = function (_ComponentBase) {
 		_inherits(NonVisualComponent, _ComponentBase);
 	
+		// The constructor of a non-visual component
 		// routeUrl: The route url to which the component is bound
 	
 		function NonVisualComponent(routeUrl) {
@@ -6017,6 +6209,9 @@
 			value: function notificationRender(storeItem, notificationOptions) {
 				console.log('[NonVisualComponent.notificationRender] invoked | storeItem = ', storeItem);
 			}
+	
+			// Invoked when the component is about to hide itself
+	
 		}, {
 			key: 'hide',
 			value: function hide() {
